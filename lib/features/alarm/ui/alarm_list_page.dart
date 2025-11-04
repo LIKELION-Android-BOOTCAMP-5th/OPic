@@ -41,7 +41,17 @@ class _AlarmListPageState extends State<_AlarmListPage> {
                 child: Row(
                   spacing: 10,
                   children: [
-                    Icon(Icons.arrow_back_rounded, color: Color(0xff515151)),
+                    IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xff515151),
+                      ),
+                      onPressed: () {},
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      focusColor: Colors.transparent,
+                    ),
                     Text(
                       "알림",
                       style: TextStyle(

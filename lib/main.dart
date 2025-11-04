@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'features/setting/ui/setting_page.dart';
+
 void main() async {
   await dotenv.load(fileName: 'assets/config/.env');
-  // runApp(
-  //   MaterialApp(
-  //     debugShowCheckedModeBanner: false,
-  //     home: AlarmListPage(userId: 123),
-  //   ),
-  // );
-  runApp(MyApp());
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: SettingPage(userId: 123),
+    ),
+  );
+  // runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
