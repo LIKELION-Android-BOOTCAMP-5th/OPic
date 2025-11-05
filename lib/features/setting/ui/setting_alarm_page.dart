@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:opicproject/features/setting/component/switch_row.dart';
 
 class SettingAlarmPage extends StatefulWidget {
@@ -39,7 +40,9 @@ class _SettingAlarmPageState extends State<SettingAlarmPage> {
                         Icons.arrow_back_rounded,
                         color: Color(0xff515151),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        context.go('/setting_page');
+                      },
                       splashColor: Colors.transparent,
                       highlightColor: Colors.transparent,
                       hoverColor: Colors.transparent,
