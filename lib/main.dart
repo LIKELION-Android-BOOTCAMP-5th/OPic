@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:opicproject/features/auth/ui/login_page.dart';
 import 'package:opicproject/features/setting/ui/setting_alarm_page.dart';
 
+
 void main() async {
   await dotenv.load(fileName: 'assets/config/.env');
   runApp(
