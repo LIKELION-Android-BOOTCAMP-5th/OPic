@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:opicproject/features/alarm/component/alarm_row_comment.dart';
+import 'package:opicproject/features/alarm/component/alarm_row_friend_accept.dart';
+import 'package:opicproject/features/alarm/component/alarm_row_friend_request.dart';
+
+import '../component/alarm_row_like.dart';
+import '../component/alarm_row_topic.dart';
 
 class AlarmListPage extends StatelessWidget {
   final int userId;
@@ -26,17 +32,17 @@ class _AlarmListPageState extends State<_AlarmListPage> {
         child: Column(
           children: [
             Container(
+              width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(
                 color: Color(0xfffafafa),
                 border: Border(
                   bottom: BorderSide(color: Color(0xff95b7db), width: 0.5),
                 ),
               ),
-              width: double.maxFinite,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15.0,
-                  vertical: 10.0,
+                  vertical: 5.0,
                 ),
                 child: Row(
                   spacing: 10,
@@ -66,11 +72,22 @@ class _AlarmListPageState extends State<_AlarmListPage> {
             ),
             Expanded(
               child: Container(
+                width: MediaQuery.of(context).size.width,
                 color: Color(0xfffcfcf0),
                 alignment: Alignment.topCenter,
                 child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text("ListView 들어갈 자리. 내용물은 Component로 뽑아야할 것 같습니다"),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+
+                  /// ListView 처리 필요
+                  child: Column(
+                    children: [
+                      AlarmRowLike(),
+                      AlarmRowTopic(),
+                      AlarmRowComment(),
+                      AlarmRowFriendRequest(),
+                      AlarmRowFriendAccept(),
+                    ],
+                  ),
                 ),
               ),
             ),
