@@ -1,53 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-
-import 'features/alarm//ui/alarm_list_page.dart';
-import 'features/auth/ui/login_page.dart';
-import 'features/feed//ui/feed.dart';
-import 'features/friend//ui/friend_page.dart';
-import 'features/home/home.dart';
-import 'features/post/ui/post_detail_page.dart';
-import 'features/setting//ui/setting_alarm_page.dart';
-import 'features/setting/ui/setting_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:opicproject/features/auth/ui/login_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
-  // await dotenv.load(fileName: 'assets/config/.env');
-  // runApp(
-  //   MaterialApp(debugShowCheckedModeBanner: false, home: PostDetailPage()),
-  // );
-  runApp(MyApp());
+  await dotenv.load(fileName: 'assets/config/.env');
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://koodearpvrdjlxcclvvj.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvb2RlYXJwdnJkamx4Y2NsdnZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4NzIyNzAsImV4cCI6MjA3NzQ0ODI3MH0.p-QLJ0Ji599xy_1_ixAmvORlftkzg9V8DPFA8OF-sAU',
+  );
+  runApp(MaterialApp(debugShowCheckedModeBanner: false, home: OpicLoginPage()));
+  // runApp(MyApp());
 }
 
-final GoRouter _router = GoRouter(
-  routes: [
-    GoRoute(path: '/', builder: (context, state) => OpicLoginPage()),
-    // GoRoute(
-    //   path: '/register_page',
-    //   builder: (context, state) => OpicRegisterPage(),
-    // ),
-    GoRoute(
-      path: '/post_detail_page',
-      builder: (context, state) => PostDetailPage(),
-    ),
-    GoRoute(
-      path: '/alarm_list_page',
-      builder: (context, state) => AlarmListPage(userId: 0),
-    ),
-    GoRoute(path: '/feed', builder: (context, state) => MyFeedScreen()),
-    // GoRoute(path: '/friend_feed', builder: (context, state) => FriendFeed()),
-    // GoRoute(path: '/my_feed', builder: (context, state) => MyFeed()),
-    GoRoute(path: '/friend_page', builder: (context, state) => FriendPage()),
-    GoRoute(path: '/home', builder: (context, state) => HomeScreen()),
-    GoRoute(
-      path: '/setting_alarm_page',
-      builder: (context, state) => SettingAlarmPage(),
-    ),
-    GoRoute(
-      path: '/setting_page',
-      builder: (context, state) => SettingPage(userId: 0),
-    ),
-  ],
-);
+final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
