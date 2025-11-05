@@ -1,11 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:opicproject/features/auth/ui/login_page.dart';
 import 'package:opicproject/features/onboarding/data/onboarding_repository.dart';
 import 'package:opicproject/features/onboarding/data/onboarding_service.dart';
 import 'package:opicproject/features/onboarding/ui/onboarding_screen.dart';
 import 'package:opicproject/features/onboarding/viewmodel/onboarding_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'features/alarm//ui/alarm_list_page.dart';
+import 'features/feed//ui/feed.dart';
+import 'features/friend//ui/friend_page.dart';
+import 'features/home/home.dart';
+import 'features/post/ui/post_detail_page.dart';
+import 'features/setting//ui/setting_alarm_page.dart';
+import 'features/setting/ui/setting_page.dart';
+
+final GoRouter _router = GoRouter(
+  routes: [
+    GoRoute(path: '/', builder: (context, state) => OnboardingScreen()),
+
+    GoRoute(path: '/login', builder: (context, state) => OpicLoginPage()),
+    // GoRoute(
+    //   path: '/register_page',
+    //   builder: (context, state) => OpicRegisterPage(),
+    // ),
+    GoRoute(
+      path: '/post_detail_page',
+      builder: (context, state) => PostDetailPage(),
+    ),
+    GoRoute(
+      path: '/alarm_list_page',
+      builder: (context, state) => AlarmListPage(userId: 0),
+    ),
+    GoRoute(path: '/feed', builder: (context, state) => MyFeedScreen()),
+    // GoRoute(path: '/friend_feed', builder: (context, state) => FriendFeed()),
+    // GoRoute(path: '/my_feed', builder: (context, state) => MyFeed()),
+    GoRoute(path: '/friend_page', builder: (context, state) => FriendPage()),
+    GoRoute(path: '/home', builder: (context, state) => HomeScreen()),
+    GoRoute(
+      path: '/setting_alarm_page',
+      builder: (context, state) => SettingAlarmPage(),
+    ),
+    GoRoute(
+      path: '/setting_page',
+      builder: (context, state) => SettingPage(userId: 0),
+    ),
+  ],
+);
 
 void main() async {
   await dotenv.load(fileName: 'assets/config/.env');
@@ -20,9 +63,10 @@ void main() async {
         ),
       ],
       //child: const MyApp(),
-      child: MaterialApp(
+      child: MaterialApp.router(
+        routerConfig: _router,
         debugShowCheckedModeBanner: false,
-        home: OnboardingScreen(),
+        // home: OnboardingScreen(),
       ),
     ),
   );
