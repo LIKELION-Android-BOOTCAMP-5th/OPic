@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:post_detail/delete_popup.dart';
 import 'package:post_detail/edit_popup.dart';
 import 'package:post_detail/post_report.dart';
 
@@ -147,7 +148,16 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                           ),
                                         ),
                                       ),
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          barrierColor: Colors.black
+                                              .withOpacity(0.6),
+                                          builder: (context) => DeletePopup(
+                                            // currentNickname: loginUser.nickname,
+                                          ),
+                                        );
+                                      },
                                       icon: Icon(
                                         Icons.delete_outline,
                                         color: Color(0xFFFF826F),
