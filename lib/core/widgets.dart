@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../component/yes_or_close_pop_up.dart';
+
 class OpicAppbar extends StatelessWidget implements PreferredSizeWidget {
   const OpicAppbar({super.key});
 
@@ -28,7 +30,23 @@ class OpicAppbar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 Container(
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        barrierColor: Colors.black.withOpacity(0.6),
+                        builder: (context) => YesOrClosePopUp(
+                          title: "로그아웃하시겠습니까?",
+                          text: "",
+                          confirmText: "로그아웃",
+                          onConfirm: () {
+                            Navigator.of(context).pop();
+                          },
+                          onCancel: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
+                    },
                     icon: Icon(Icons.exit_to_app),
                   ),
                 ),
