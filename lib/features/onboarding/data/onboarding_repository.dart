@@ -3,7 +3,7 @@ import 'package:opicproject/core/models/onboarding_model.dart';
 
 class OnboardingDataRepository {
   static const String _onboardingKey = 'hasSeenOnboarding';
-
+  //사용중인 온보딩이미지 가져오기
   Future<List<Onboarding>> fetchOnboardingData() async {
     List<Map<String, dynamic>> data = await SupabaseManager.shared.supabase
         .from('onboarding')
