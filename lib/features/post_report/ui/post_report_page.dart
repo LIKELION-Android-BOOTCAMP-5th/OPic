@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class PostReportPage extends StatelessWidget {
-  // final String currentNickname;
-
   const PostReportPage({super.key});
 
   @override
