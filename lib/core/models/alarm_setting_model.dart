@@ -34,6 +34,7 @@ class AlarmSetting {
       newComment: json['new_comment'] as bool,
       newRequest: json['new_request'] as bool,
       newFriend: json['new_friend'] as bool,
+      editedAt: json['edited_at'] as String?,
     );
   }
 }
