@@ -5,7 +5,6 @@ import 'package:opicproject/core/models/page_model.dart';
 import 'package:opicproject/features/auth/ui/login_page.dart';
 import 'package:opicproject/features/home/main_page.dart';
 import 'package:opicproject/features/onboarding/data/onboarding_service.dart';
-import 'package:opicproject/features/onboarding/ui/onboarding_screen.dart';
 import 'package:opicproject/features/onboarding/viewmodel/onboarding_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -22,7 +21,7 @@ import 'features/setting/ui/setting_page.dart';
 
 final GoRouter _router = GoRouter(
   routes: [
-    GoRoute(path: '/', builder: (context, state) => OnboardingScreen()),
+    GoRoute(path: '/', builder: (context, state) => FriendScreen()),
 
     GoRoute(path: '/login', builder: (context, state) => LoginScreen()),
     // GoRoute(
