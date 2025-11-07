@@ -4,6 +4,7 @@ import 'package:opicproject/core/models/page_model.dart';
 import 'package:opicproject/features/feed/ui/feed.dart';
 import 'package:opicproject/features/friend/ui/friend_page.dart';
 import 'package:opicproject/features/home/home.dart';
+import 'package:opicproject/features/setting/ui/setting_page.dart';
 import 'package:provider/provider.dart';
 
 class OpicAppbar extends StatelessWidget implements PreferredSizeWidget {
@@ -66,9 +67,6 @@ class _OpicBottomNavState extends State<OpicBottomNav> {
     return BottomNavigationBar(
       onTap: (index) {
         pageViewmodelRead.onPageChanged(index);
-        if (index == 3) {
-          context.push('/setting_page');
-        }
       },
       currentIndex: currentpage,
       showSelectedLabels: true,
@@ -112,7 +110,12 @@ class _OpicPageViewState extends State<OpicPageView> {
         }
       },
       controller: pageController,
-      children: [HomeScreen(), FriendScreen(), MyFeedScreen()],
+      children: [
+        HomeScreen(),
+        FriendScreen(),
+        MyFeedScreen(),
+        SettingScreen(userId: 0),
+      ],
     );
   }
 }
