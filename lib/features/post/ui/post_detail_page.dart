@@ -313,20 +313,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    height: 35,
-                    width: 350,
-                    color: Colors.white,
-                    child: TextField(
-                      //이거 추가함
-                      controller: _commentListController,
-                      decoration: InputDecoration(
-                        hintText: "댓글을 입력하세요..",
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                  //여기부터 수정함
+                  Expanded(
+                    child: Container(
+                      height: 35,
+                      // width: 350,
+                      color: Colors.white,
+                      child: TextField(
+                        //이거 추가함
+                        controller: _commentListController,
+                        decoration: InputDecoration(
+                          hintText: "댓글을 입력하세요..",
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
+                        ),
                       ),
                     ),
                   ),
+
                   Padding(padding: EdgeInsets.only(left: 10)),
                   Container(
                     alignment: Alignment.center,
