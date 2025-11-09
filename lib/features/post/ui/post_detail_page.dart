@@ -295,11 +295,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                           TextAlign.start,
                                                     ),
                                                   ),
-                                                  // Padding(
-                                                  //   padding: EdgeInsets.only(
-                                                  //     bottom: 5,
-                                                  //   ),
-                                                  // ),
                                                 ],
                                               ),
                                             );

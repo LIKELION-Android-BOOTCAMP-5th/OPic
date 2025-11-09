@@ -1,9 +1,30 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:opicproject/features/post/ui/post_detail_page.dart';
 
-class EditPopup extends StatelessWidget {
+class EditPopup extends StatefulWidget {
   const EditPopup({super.key});
+
+  @override
+  State<EditPopup> createState() => _EditPopupState();
+}
+
+class _EditPopupState extends State<EditPopup> {
+  File? selectedImage;
+
+  final pick = ImagePicker();
+
+  Future<void> openGallery() async {
+    XFile? pickImage = await pick.pickImage(source: ImageSource.gallery);
+    if (pickImage != null) {
+      setState(() {
+        selectedImage = File(pickImage.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,19 +62,25 @@ class EditPopup extends StatelessWidget {
             ),
 
             SizedBox(height: 12),
-
-            Image.network(
-              'https://images.unsplash.com/photo-1455156218388-5e61b526818b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fCVFQSVCMiVBOCVFQyU5QSVCOHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=500',
-              width: double.infinity,
-              height: 350,
-              fit: BoxFit.fill,
-            ),
+            selectedImage == null
+                ? Image.network(
+                    'https://images.unsplash.com/photo-1455156218388-5e61b526818b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fCVFQSVCMiVBOCVFQyU5QSVCOHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=500',
+                    width: double.infinity,
+                    height: 350,
+                    fit: BoxFit.fill,
+                  )
+                : Image.file(
+                    selectedImage!,
+                    width: double.infinity,
+                    height: 350,
+                    fit: BoxFit.fill,
+                  ),
             SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  context.pop();
+                  openGallery();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xffe8e8dc),
