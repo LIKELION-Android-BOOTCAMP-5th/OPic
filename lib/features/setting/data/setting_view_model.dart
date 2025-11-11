@@ -68,9 +68,17 @@ class SettingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> editNickname(int loginUserId, String newNickname) async {
-    await _repository.editNickname(loginUserId, newNickname);
-    await fetchUserInfo(loginUserId);
+  Future<void> editNickname(int loginUserId, String nickname) async {
+    final updatedUser = await _repository.editNickname(loginUserId, nickname);
+
+    if (updatedUser != null) {
+      _loginUser = updatedUser;
+
+      // AuthManager도 업데이트
+      AuthManager.shared.updateUserInfo(updatedUser);
+
+      notifyListeners();
+    }
   }
 
   Future<void> fetchAlarmSetting(int loginId) async {
