@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:opicproject/core/app_colors.dart';
+import 'package:opicproject/core/manager/supabase_manager.dart';
+import 'package:opicproject/core/models/user_model.dart';
 import 'package:opicproject/features/friend/component/add_friend_pop_up.dart';
 import 'package:opicproject/features/friend/component/friend_info_row.dart';
 import 'package:opicproject/features/friend/component/friend_request_row.dart';
@@ -204,18 +206,34 @@ Widget _friendList(BuildContext context, FriendViewModel viewModel) {
       itemCount: friendsCount,
       itemBuilder: (context, index) {
         final friend = viewModel.friends[index];
-        final friendUser = loginUserId == friend.user1Id
+        final friendUserId = loginUserId == friend.user1Id
             ? friend.user2Id
             : friend.user1Id;
-        final friendInfo = viewModel.fetchAUser(friendUser);
 
-        return Container(
-          color: AppColors.opicBackground,
-          child: FriendInfoRow(
-            userId: loginUserId,
-            friendId: friend.id,
-            friendNickname: viewModel.certainUser?.nickname ?? "알 수 없음",
-          ),
+        return FutureBuilder<UserInfo?>(
+          future: SupabaseManager.shared.fetchAUser(friendUserId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                color: AppColors.opicBackground,
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.opicBlue),
+                ),
+              );
+            }
+
+            final friendNickname = snapshot.data?.nickname ?? "알 수 없음";
+
+            return Container(
+              color: AppColors.opicBackground,
+              child: FriendInfoRow(
+                userId: loginUserId,
+                friendId: friend.id,
+                friendNickname: friendNickname,
+              ),
+            );
+          },
         );
       },
     ),
@@ -246,18 +264,34 @@ Widget _friendRequest(BuildContext context, FriendViewModel viewModel) {
       itemCount: friendRequestsCount,
       itemBuilder: (context, index) {
         final friendRequest = viewModel.friendRequests[index];
-        final requestId = viewModel.friendRequests[index].id;
-        final requesterId = viewModel.friendRequests[index].requestId;
-        final requesterInfo = viewModel.fetchAUser(requesterId);
+        final requestId = friendRequest.id;
+        final requesterId = friendRequest.requestId;
 
-        return Container(
-          color: AppColors.opicBackground,
-          child: FriendRequestRow(
-            userId: loginUserId,
-            requestId: requestId,
-            requesterNickname: viewModel.certainUser?.nickname ?? "알 수 없음",
-            requesterId: requesterId,
-          ),
+        return FutureBuilder<UserInfo?>(
+          future: SupabaseManager.shared.fetchAUser(requesterId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                color: AppColors.opicBackground,
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.opicBlue),
+                ),
+              );
+            }
+
+            final requesterNickname = snapshot.data?.nickname ?? "알 수 없음";
+
+            return Container(
+              color: AppColors.opicBackground,
+              child: FriendRequestRow(
+                userId: loginUserId,
+                requestId: requestId,
+                requesterNickname: requesterNickname,
+                requesterId: requesterId,
+              ),
+            );
+          },
         );
       },
     ),

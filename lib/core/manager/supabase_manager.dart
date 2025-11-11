@@ -120,11 +120,12 @@ class SupabaseManager {
   }
 
   // 닉네임 수정
-  Future<void> editNickname(int loginUserId, String nickname) async {
+  Future<UserInfo?> editNickname(int loginUserId, String nickname) async {
     await supabase
         .from('user')
         .update({'nickname': nickname})
         .eq('id', loginUserId);
+    return await fetchAUser(loginUserId);
   }
 
   // 알람 설정 업데이트

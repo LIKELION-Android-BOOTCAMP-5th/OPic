@@ -94,4 +94,9 @@ class AuthManager extends ChangeNotifier {
     userInfo = result;
     notifyListeners();
   }
+
+  void updateUserInfo(UserInfo newUserInfo) {
+    userInfo = newUserInfo;
+    notifyListeners();
+  }
 }

@@ -54,7 +54,7 @@ class _EditNicknamePopUpState extends State<EditNicknamePopUp> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "새로운 닉네임을 입력 한 뒤 변경하기를 눌러주세요",
+              "새로운 닉네임을 입력 한 뒤\n변경하기를 눌러주세요",
               style: TextStyle(
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
@@ -206,7 +206,7 @@ class _EditNicknamePopUpState extends State<EditNicknamePopUp> {
 
     // 유효한 경우
     return Text(
-      "사용 가능한 닉네임입니다 ✓",
+      "변경하기를 눌러주세요 ✓",
       style: TextStyle(
         fontWeight: FontWeight.w400,
         fontSize: 11,

@@ -15,8 +15,8 @@ class SettingRepository {
   }
 
   // 닉네임 변경하기
-  Future<void> editNickname(int loginUserId, String newNickname) async {
-    await SupabaseManager.shared.editNickname(loginUserId, newNickname);
+  Future<UserInfo?> editNickname(int loginUserId, String newNickname) async {
+    return await SupabaseManager.shared.editNickname(loginUserId, newNickname);
   }
 
   // 알람 설정 가져오기
