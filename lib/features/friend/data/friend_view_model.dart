@@ -17,7 +17,7 @@ class FriendViewModel extends ChangeNotifier {
   bool shouldShowScrollUpButton = false;
 
   int? _loginUserId;
-  int get loginUserId => _loginUserId ?? 0;
+  int? get loginUserId => _loginUserId;
 
   bool _showFriendRequests = false;
   bool get showFriendRequests => _showFriendRequests;
@@ -28,10 +28,9 @@ class FriendViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  // AuthManager 상태 구독
   FriendViewModel() {
     AuthManager.shared.addListener(_onAuthChanged);
-    _checkCurrentAuth();
-    notifyListeners();
   }
 
   void _onAuthChanged() {
