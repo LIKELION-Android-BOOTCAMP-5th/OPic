@@ -13,7 +13,9 @@ class FriendRepository {
     );
   }
 
-  // 친구 삭제
+  final _supabase = Supabase.instance.client;
+
+  // 친구 삭제하기
   Future<void> deleteFriend(int friendId) async {
     await _supabase.from('friends').delete().eq('id', friendId);
   }
