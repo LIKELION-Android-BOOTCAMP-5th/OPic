@@ -17,7 +17,7 @@ class FriendViewModel extends ChangeNotifier {
   bool shouldShowScrollUpButton = false;
 
   int? _loginUserId;
-  int? get loginUserId => _loginUserId;
+  int get loginUserId => _loginUserId ?? 0;
 
   bool _showFriendRequests = false;
   bool get showFriendRequests => _showFriendRequests;
@@ -29,24 +29,33 @@ class FriendViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   FriendViewModel() {
-    _initializeScrollListener();
-    Future.delayed(Duration.zero, () {
-      _getCurrentUserId();
-    });
+    AuthManager.shared.addListener(_onAuthChanged);
+    _checkCurrentAuth();
+    notifyListeners();
   }
 
-  Future<void> _getCurrentUserId() async {
-    // AuthManager에서 유저 ID 가져오기
-    final userId = AuthManager.shared.userInfo?.id;
-    debugPrint("유저아이디 : $userId");
+  void _onAuthChanged() {
+    _checkCurrentAuth();
+  }
 
-    if (userId != null) {
+  void _checkCurrentAuth() {
+    final userId = AuthManager.shared.userInfo?.id;
+
+    if (userId != null && !_isInitialized) {
       _loginUserId = userId;
       _isInitialized = true;
       notifyListeners();
-      await initialize(userId);
-      return;
+      initialize(userId);
+    } else if (userId == null && _isInitialized) {
+      _loginUserId = null;
+      _isInitialized = false;
+      _friends = [];
+      notifyListeners();
+    } else if (userId != null && _isInitialized) {
+      print("초기화 완료");
     }
+
+    debugPrint("userId: $userId");
   }
 
   void _initializeScrollListener() {
