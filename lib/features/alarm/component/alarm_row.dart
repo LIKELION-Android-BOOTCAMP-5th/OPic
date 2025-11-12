@@ -62,7 +62,6 @@ class AlarmRow extends StatelessWidget {
                   size: 20,
                   color: AppColors.opicBlue,
                 ),
-                // TODO: Handle this case.
                 String() => throw UnimplementedError(),
               },
             ),
