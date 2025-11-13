@@ -35,8 +35,6 @@ void main() async {
   //firebase초기화
   await Firebase.initializeApp();
 
-  await dotenv.load(fileName: 'assets/config/.env');
-
   await Supabase.initialize(
     url: 'https://zoqxnpklgtcqkvskarls.supabase.co',
     anonKey:
@@ -44,7 +42,7 @@ void main() async {
   );
   //백그라운드 핸들러
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  //매니저 초기화(토큰/리스너 설정)
+  //매니저 초기화(토큰/리스너 설정,로컬 푸시 설정)
   await FirebaseManager().initialize();
   //getIt 로케이터 초기화
   initLocator();
