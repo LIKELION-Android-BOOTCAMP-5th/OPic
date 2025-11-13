@@ -127,6 +127,7 @@ class FeedViewModel extends ChangeNotifier {
     );
   }
 
+  // 피드 게시물들 가져오기
   Future<void> fetchPosts(int startIndex, int userId) async {
     _posts = await _repository.fetchPosts(startIndex, userId);
     debugPrint("FeedViewModel fetchPosts 호출됨: ${_posts.length}개");
@@ -182,12 +183,14 @@ class FeedViewModel extends ChangeNotifier {
   // 차단하기
   Future<void> blockUser(int loginUserId, int userId) async {
     await _repository.blockUser(loginUserId, userId);
+    _isBlocked = true;
     notifyListeners();
   }
 
   // 차단해제하기
   Future<void> unblockUser(int loginUserId, int userId) async {
     await _repository.unblockUser(loginUserId, userId);
+    _isBlocked = false;
     notifyListeners();
   }
 
