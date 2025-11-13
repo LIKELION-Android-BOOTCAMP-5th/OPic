@@ -22,6 +22,11 @@ class FeedRepository {
     return await SupabaseManager.shared.checkIfBlocked(loginUserId, userId);
   }
 
+  // 날 차단했는지 여부 확인하기
+  Future<bool> checkIfBlockedMe(int loginUserId, int userId) async {
+    return await SupabaseManager.shared.checkIfBlockedMe(loginUserId, userId);
+  }
+
   // 차단하기
   Future<void> blockUser(int loginUserId, int userId) async {
     return await SupabaseManager.shared.blockUser(loginUserId, userId);
@@ -30,5 +35,10 @@ class FeedRepository {
   // 차단 해제 하기
   Future<void> unblockUser(int loginUserId, int userId) async {
     return await SupabaseManager.shared.unblockUser(loginUserId, userId);
+  }
+
+  // 친구 신청 중 여부 확인하기
+  Future<bool> checkIfRequested(int loginUserId, int userId) async {
+    return await SupabaseManager.shared.checkIfRequested(loginUserId, userId);
   }
 }

@@ -176,6 +176,20 @@ class SupabaseManager {
     return true;
   }
 
+  // 상대가 날 차단했는지 확인하기
+  Future<bool> checkIfBlockedMe(int loginId, int userId) async {
+    final data = await supabase
+        .from("block")
+        .select('id')
+        .eq('user_id', userId)
+        .eq('blocked_user', loginId)
+        .maybeSingle();
+    if (data == null) {
+      return false;
+    }
+    return true;
+  }
+
   // 차단하기
   Future<void> blockUser(int loginId, int userId) async {
     await supabase.from("block").insert({
@@ -192,5 +206,18 @@ class SupabaseManager {
         .delete()
         .eq('user_id', loginId)
         .eq('blocked_user', userId);
+  }
+
+  // 친구 요청 중 여부 확인하기
+  Future<bool> checkIfRequested(int loginId, int userId) async {
+    final data = await supabase
+        .from("friend_request")
+        .select('id')
+        .or(
+          'and(request_id.eq.$loginId,target_id.eq.$userId),and(request_id.eq.$userId,target_id.eq.$loginId)',
+        )
+        .maybeSingle();
+
+    return data != null;
   }
 }

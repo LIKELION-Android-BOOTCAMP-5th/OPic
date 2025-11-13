@@ -33,6 +33,12 @@ class FeedViewModel extends ChangeNotifier {
   bool _isBlocked = false;
   bool get isBlocked => _isBlocked;
 
+  bool _isBlockedMe = false;
+  bool get isBlockedMe => _isBlockedMe;
+
+  bool _isRequested = false;
+  bool get isRequested => _isRequested;
+
   // AuthManager 상태 구독
   FeedViewModel() {
     AuthManager.shared.addListener(_onAuthChanged);
@@ -165,6 +171,12 @@ class FeedViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 날 차단했는지 확인하기
+  Future<void> checkIfBlockedMe(int loginUserId, int userId) async {
+    _isBlockedMe = await _repository.checkIfBlockedMe(loginUserId, userId);
+    notifyListeners();
+  }
+
   // 차단하기
   Future<void> blockUser(int loginUserId, int userId) async {
     await _repository.blockUser(loginUserId, userId);
@@ -174,6 +186,12 @@ class FeedViewModel extends ChangeNotifier {
   // 차단 해제 하기
   Future<void> unblockUser(int loginUserId, int userId) async {
     await _repository.unblockUser(loginUserId, userId);
+    notifyListeners();
+  }
+
+  // 친구 신청 여부 확인하기
+  Future<void> checkIfRequested(int loginUserId, int userId) async {
+    _isRequested = await _repository.checkIfRequested(loginUserId, userId);
     notifyListeners();
   }
 
