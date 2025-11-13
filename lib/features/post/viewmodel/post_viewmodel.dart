@@ -147,10 +147,16 @@ class PostViewModel extends ChangeNotifier {
     return supabase.storage.from('post_images').getPublicUrl(fileName);
   }
 
+
+  Future<void> deletePost(int postId) async {
+    await _repository.deletePostWithRelations(postId);
+    clearPostData();
+
   Post? _thisPost;
   Post? get thisPost => _thisPost;
 
   Future<void> fetchPostWriterId(int postId) async {
     _thisPost = await _repository.fetchPostWriterId(postId);
+
   }
 }
