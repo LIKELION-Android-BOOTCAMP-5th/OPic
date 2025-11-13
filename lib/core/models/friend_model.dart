@@ -3,6 +3,7 @@ class Friend {
   final String createdAt;
   final int user1Id;
   final int user2Id;
+
   Friend({
     required this.id,
     required this.createdAt,

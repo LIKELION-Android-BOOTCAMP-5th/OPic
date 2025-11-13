@@ -168,7 +168,7 @@ class SupabaseManager {
         .from("block")
         .select('id')
         .eq('user_id', loginId)
-        .eq('blocked_user_id', userId)
+        .eq('blocked_user', userId)
         .maybeSingle();
     if (data == null) {
       return false;
@@ -180,7 +180,7 @@ class SupabaseManager {
   Future<void> blockUser(int loginId, int userId) async {
     await supabase.from("block").insert({
       'user_id': loginId,
-      'blocked_user_id': userId,
+      'blocked_user': userId,
       'blocked_at': DateTime.now().toIso8601String(),
     });
   }
@@ -191,6 +191,6 @@ class SupabaseManager {
         .from("block")
         .delete()
         .eq('user_id', loginId)
-        .eq('blocked_user_id', userId);
+        .eq('blocked_user', userId);
   }
 }

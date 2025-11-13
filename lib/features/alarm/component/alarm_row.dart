@@ -42,13 +42,13 @@ class AlarmRow extends StatelessWidget {
           case "NEW_FRIEND_REQUEST":
             context.pop();
             pageViewModel.onPageChanged(1);
-            friendViewModel.changeTab(true);
+            friendViewModel.changeTab(1);
             alarmViewModel.checkAlarm(loginUserId, alarmId);
             break;
           case "NEW_FRIEND":
             context.pop();
             pageViewModel.onPageChanged(1);
-            friendViewModel.changeTab(false);
+            friendViewModel.changeTab(0);
             alarmViewModel.checkAlarm(loginUserId, alarmId);
             break;
           case "NEW_LIKE":

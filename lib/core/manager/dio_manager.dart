@@ -232,7 +232,7 @@ class DioManager {
   }
 
   // 유저가 차단한 사용자 불러오기
-  Future<List<Block>> fetchBlockUsers({required int userId}) async {
+  Future<List<BlockUser>> fetchBlockUsers({required int userId}) async {
     final response = await _dio.get(
       'https://zoqxnpklgtcqkvskarls.supabase.co/rest/v1/block',
       queryParameters: {'select': '*', 'user_id': 'eq.$userId'},
@@ -248,8 +248,43 @@ class DioManager {
 
     if (response.data != null) {
       final List data = response.data;
-      final List<Block> results = data.map((json) {
-        return Block.fromJson(json);
+      final List<BlockUser> results = data.map((json) {
+        return BlockUser.fromJson(json);
+      }).toList();
+      return results;
+    } else {
+      return List.empty();
+    }
+  }
+
+  // 유저가 차단한 사용자 불러오기 with pager
+  Future<List<BlockUser>> fetchBlockUsersWithPager({
+    int currentPage = 1,
+    int perPage = 10,
+    required int userId,
+  }) async {
+    final int startIndex = perPage * (currentPage - 1);
+    final int endIndex = startIndex + perPage - 1;
+    final String range = "$startIndex-$endIndex";
+
+    final response = await _dio.get(
+      'https://zoqxnpklgtcqkvskarls.supabase.co/rest/v1/block',
+      queryParameters: {'select': '*', 'user_id': 'eq.$userId'},
+      options: Options(
+        headers: {
+          'apikey':
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXhucGtsZ3RjcWt2c2thcmxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTk4NTYsImV4cCI6MjA3ODA3NTg1Nn0.qR8GmGNztCm44qqm7xJK4VvmI1RcIJybGKeMVBy8yaA',
+          'Authorization':
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXhucGtsZ3RjcWt2c2thcmxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTk4NTYsImV4cCI6MjA3ODA3NTg1Nn0.qR8GmGNztCm44qqm7xJK4VvmI1RcIJybGKeMVBy8yaA',
+          'Range': range,
+        },
+      ),
+    );
+
+    if (response.data != null) {
+      final List data = response.data;
+      final List<BlockUser> results = data.map((json) {
+        return BlockUser.fromJson(json);
       }).toList();
       return results;
     } else {
@@ -258,7 +293,9 @@ class DioManager {
   }
 
   // 유저가 차단했거나, 유저가 차단당한 사용자 불러오기
-  Future<List<Block>> fetchBlockOrBlockedUsers({required int userId}) async {
+  Future<List<BlockUser>> fetchBlockOrBlockedUsers({
+    required int userId,
+  }) async {
     final response = await _dio.get(
       'https://zoqxnpklgtcqkvskarls.supabase.co/rest/v1/block',
       queryParameters: {
@@ -277,8 +314,8 @@ class DioManager {
 
     if (response.data != null) {
       final List data = response.data;
-      final List<Block> results = data.map((json) {
-        return Block.fromJson(json);
+      final List<BlockUser> results = data.map((json) {
+        return BlockUser.fromJson(json);
       }).toList();
       return results;
     } else {

@@ -1,21 +1,21 @@
-class Block {
+class BlockUser {
   final int id;
   final int userId;
   final int blockedUserId;
   final String blockedAt;
 
-  Block({
+  BlockUser({
     required this.id,
     required this.userId,
     required this.blockedUserId,
     required this.blockedAt,
   });
 
-  factory Block.fromJson(Map<String, dynamic> json) {
-    return Block(
+  factory BlockUser.fromJson(Map<String, dynamic> json) {
+    return BlockUser(
       id: json['id'] as int,
       userId: json['user_id'] as int,
-      blockedUserId: json['blocked_user_id'] as int,
+      blockedUserId: json['blocked_user'] as int,
       blockedAt: json['blocked_at'] as String,
     );
   }
@@ -24,7 +24,7 @@ class Block {
     return {
       'id': id,
       'user_id': userId,
-      'blocked_user_id': blockedUserId,
+      'blocked_user': blockedUserId,
       'blocked_at': blockedAt,
     };
   }
