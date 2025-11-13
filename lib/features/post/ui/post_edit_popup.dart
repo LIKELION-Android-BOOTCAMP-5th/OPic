@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/features/post/ui/post_detail_page.dart';
 import 'package:opicproject/features/post/viewmodel/post_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +37,7 @@ class _EditPopupState extends State<EditPopup> {
     final viewmodel = context.watch<PostViewModel>();
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Color(0xfffefefe),
+      backgroundColor: AppColors.opicWhite,
       child: Padding(
         padding: EdgeInsets.all(24),
         child: Column(
@@ -57,10 +58,13 @@ class _EditPopupState extends State<EditPopup> {
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 14,
-                          color: Color(0xff515151),
+                          color: AppColors.opicBlack,
                         ),
                       ),
-                      Text("겨울풍경", style: TextStyle(color: Color(0xFF95B7DB))),
+                      Text(
+                        "겨울풍경",
+                        style: TextStyle(color: AppColors.opicSoftBlue),
+                      ),
                     ],
                   ),
                 ],
@@ -91,8 +95,8 @@ class _EditPopupState extends State<EditPopup> {
                   openGallery();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xffe8e8dc),
-                  foregroundColor: Color(0xfffefefe),
+                  backgroundColor: AppColors.opicBackground,
+                  foregroundColor: AppColors.opicWhite,
                   padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -100,14 +104,14 @@ class _EditPopupState extends State<EditPopup> {
                 ),
                 icon: Icon(
                   Icons.file_upload_outlined,
-                  color: Color(0xff515151),
+                  color: AppColors.opicBlack,
                 ),
                 label: Text(
                   "다른 이미지 업로드",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xff515151),
+                    color: AppColors.opicBlack,
                   ),
                 ),
               ),
@@ -120,8 +124,8 @@ class _EditPopupState extends State<EditPopup> {
                   camera();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xff95b7db),
-                  foregroundColor: Color(0xfffefefe),
+                  backgroundColor: AppColors.opicSoftBlue,
+                  foregroundColor: AppColors.opicWhite,
                   padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -133,7 +137,7 @@ class _EditPopupState extends State<EditPopup> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xfffefefe),
+                    color: AppColors.opicWhite,
                   ),
                 ),
               ),
@@ -150,8 +154,8 @@ class _EditPopupState extends State<EditPopup> {
                       showToast("게시물 수정이 완료되었습니다.");
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xff95b7db),
-                      foregroundColor: Color(0xfffefefe),
+                      backgroundColor: AppColors.opicSoftBlue,
+                      foregroundColor: AppColors.opicWhite,
                       padding: EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -162,7 +166,7 @@ class _EditPopupState extends State<EditPopup> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xfffefefe),
+                        color: AppColors.opicWhite,
                       ),
                     ),
                   ),
@@ -174,8 +178,8 @@ class _EditPopupState extends State<EditPopup> {
                       context.pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffe8e8dc),
-                      foregroundColor: Color(0xfffefefe),
+                      backgroundColor: AppColors.opicBackground,
+                      foregroundColor: AppColors.opicWhite,
                       padding: EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -186,7 +190,7 @@ class _EditPopupState extends State<EditPopup> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xff515151),
+                        color: AppColors.opicBlack,
                       ),
                     ),
                   ),

@@ -15,9 +15,6 @@ class OpicAppbar extends StatelessWidget implements PreferredSizeWidget {
         final isLoggedIn = authManager.userInfo != null;
         final authViewModel = context.read<AuthViewModel>();
 
-        print("🔍 OpicAppbar - isLoggedIn: $isLoggedIn");
-        print("🔍 OpicAppbar - userInfo: ${authManager.userInfo?.email}");
-
         return SizedBox(
           height: MediaQuery.of(context).size.height * 0.05,
           child: Row(
@@ -97,75 +94,3 @@ class OpicBottomNav extends StatelessWidget {
     );
   }
 }
-
-// class OpicBottomNav extends StatefulWidget {
-//   const OpicBottomNav({super.key});
-//
-//   @override
-//   State<OpicBottomNav> createState() => _OpicBottomNavState();
-// }
-//
-// class _OpicBottomNavState extends State<OpicBottomNav> {
-//   @override
-//   Widget build(BuildContext context) {
-//     final PageViewmodel = context.watch<PageCountViewmodel>();
-//     final pageViewmodelRead = context.read<PageCountViewmodel>();
-//     final currentpage = PageViewmodel.currentPage;
-//     return BottomNavigationBar(
-//       onTap: (index) {
-//         pageViewmodelRead.onPageChanged(index);
-//       },
-//       currentIndex: currentpage,
-//       showSelectedLabels: true,
-//       showUnselectedLabels: true,
-//       selectedIconTheme: IconThemeData(color: AppColors.opicSoftBlue),
-//       unselectedIconTheme: IconThemeData(color: AppColors.opicCoolGrey),
-//       selectedItemColor: AppColors.opicSoftBlue,
-//       unselectedItemColor: AppColors.opicCoolGrey,
-//       type: BottomNavigationBarType.fixed,
-//       items: [
-//         BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: '홈'),
-//         BottomNavigationBarItem(icon: Icon(Icons.people), label: '친구'),
-//         BottomNavigationBarItem(icon: Icon(Icons.image), label: '내 피드'),
-//         BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
-//       ],
-//     );
-//   }
-// }
-//
-// class OpicPageView extends StatefulWidget {
-//   const OpicPageView({super.key});
-//
-//   @override
-//   State<OpicPageView> createState() => _OpicPageViewState();
-// }
-//
-// class _OpicPageViewState extends State<OpicPageView> {
-//   @override
-//   Widget build(BuildContext context) {
-//     final PageViewmodel = context.watch<PageCountViewmodel>();
-//     final PageViewmodelRead = context.read<PageCountViewmodel>();
-//     final currentpage = PageViewmodel.currentPage;
-//     final PageController pageController = context
-//         .watch<PageCountViewmodel>()
-//         .pageController;
-//     final loginUserId = AuthManager.shared.userInfo?.id ?? 0;
-//     return PageView(
-//       onPageChanged: (index) {
-//         if (index > currentpage) {
-//           PageViewmodelRead.increment();
-//         }
-//         if (index < currentpage) {
-//           PageViewmodelRead.decrement();
-//         }
-//       },
-//       controller: pageController,
-//       children: [
-//         HomeScreen(),
-//         FriendScreen(),
-//         FeedScreen(userId: loginUserId),
-//         SettingScreen(),
-//       ],
-//     );
-//   }
-// }
