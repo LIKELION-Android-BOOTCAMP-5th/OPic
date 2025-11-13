@@ -175,7 +175,7 @@ class PostDetailScreen extends StatelessWidget {
                                   ],
                                 )
                               :
-                                // 다른 사람 게시물: 신고하기
+                                // 신고하기
                                 TextButton.icon(
                                   onPressed: () {
                                     showDialog(
@@ -183,8 +183,9 @@ class PostDetailScreen extends StatelessWidget {
                                       barrierColor: Colors.black.withOpacity(
                                         0.6,
                                       ),
-                                      builder: (context) =>
-                                          const PostReportScreen(),
+                                      builder: (context) => PostReportScreen(
+                                        postId: viewmodel.post?['id'] ?? 0,
+                                      ),
                                     );
                                   },
                                   icon: Icon(

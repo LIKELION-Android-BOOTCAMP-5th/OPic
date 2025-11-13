@@ -96,24 +96,7 @@ class PostViewModel extends ChangeNotifier {
   }
 
   Future<void> loadLoginUserInfo() async {
-    final authId = SupabaseManager.shared.supabase.auth.currentUser?.id;
-
-    if (authId == null) {
-      loginUserName = "알수없음";
-      notifyListeners();
-      return;
-    }
-
-    final data = await SupabaseManager.shared.supabase
-        .from('user')
-        .select()
-        .eq('auth_id', authId)
-        .maybeSingle();
-
-    if (data != null) {
-      loginUserName = data['nickname'] ?? "이름없음";
-    }
-
+    loginUserName = AuthManager.shared.userInfo?.nickname ?? "알수없음";
     notifyListeners();
   }
 
