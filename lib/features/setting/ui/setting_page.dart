@@ -53,39 +53,6 @@ class _SettingScreenState extends State<_SettingScreen> {
 
             return Column(
               children: [
-                // 헤더
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.opicWhite,
-                    border: Border(
-                      top: BorderSide(
-                        color: AppColors.opicSoftBlue,
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  width: double.maxFinite,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15.0,
-                      vertical: 10.0,
-                    ),
-                    child: Row(
-                      spacing: 10,
-                      children: [
-                        Text(
-                          "설정",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: AppColors.opicBlack,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
                 // 프로필 섹션
                 Container(
                   decoration: BoxDecoration(
