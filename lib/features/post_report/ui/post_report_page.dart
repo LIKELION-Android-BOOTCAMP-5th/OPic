@@ -1,9 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:opicproject/core/manager/autn_manager.dart';
+import 'package:opicproject/core/manager/supabase_manager.dart';
 import 'package:opicproject/features/post/ui/post_detail_page.dart';
 
-class PostReportScreen extends StatelessWidget {
-  const PostReportScreen({super.key});
+class PostReportScreen extends StatefulWidget {
+  final int postId;
+  const PostReportScreen({super.key, required this.postId});
+
+  @override
+  _PostReportScreenState createState() => _PostReportScreenState();
+}
+
+class _PostReportScreenState extends State<PostReportScreen> {
+  final TextEditingController _reasonController = TextEditingController();
+
+  Future<void> _submitReport(int postId) async {
+    final reason = _reasonController.text;
+
+    if (reason.isEmpty) {
+      showToast('신고 사유를 입력해주세요.');
+      return;
+    }
+
+    final userId = AuthManager.shared.userInfo?.id ?? 0;
+
+    try {
+      await SupabaseManager.shared.supabase.from('post_report').insert({
+        'reported_post_id': postId,
+        'reporter_id': userId,
+        'report_reason': reason,
+        'checked_at': DateTime.now().toIso8601String(),
+        'is_checked': false,
+      });
+
+      showToast('신고가 접수되었습니다.');
+      Navigator.pop(context);
+    } catch (error) {
+      print('신고 에러 상세: $error');
+      showToast('신고 실패');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +70,13 @@ class PostReportScreen extends StatelessWidget {
                 ],
               ),
             ),
-
             SizedBox(height: 12),
             Container(
               padding: EdgeInsets.only(left: 15),
               color: Color(0xFFFCFCF0),
               height: 150,
               child: TextField(
+                controller: _reasonController,
                 maxLines: null,
                 obscureText: false,
                 decoration: InputDecoration(
@@ -58,8 +94,7 @@ class PostReportScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.pop();
-                      showToast("신고가 완료되었습니다");
+                      _submitReport(widget.postId);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xff95b7db),
@@ -83,7 +118,7 @@ class PostReportScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.pop();
+                      Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xffe8e8dc),

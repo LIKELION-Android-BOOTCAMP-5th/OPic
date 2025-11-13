@@ -6,7 +6,6 @@ class PostRepository {
 
   final supabase = SupabaseManager.shared.supabase;
 
-  /// 좋아요 토글
   Future<void> toggleLike(int userId, int postId) async {
     final supabase = SupabaseManager.shared.supabase;
 
@@ -30,7 +29,6 @@ class PostRepository {
     }
   }
 
-  /// 댓글 작성
   Future<void> commentSend(int userId, int postId, String text) async {
     final supabase = SupabaseManager.shared.supabase;
 
@@ -43,7 +41,6 @@ class PostRepository {
     });
   }
 
-  /// 댓글 목록 조회
   Future<List<Map<String, dynamic>>> fetchComments(int postId) async {
     final supabase = SupabaseManager.shared.supabase;
 
@@ -56,7 +53,6 @@ class PostRepository {
     return List<Map<String, dynamic>>.from(result);
   }
 
-  /// 좋아요 개수 조회
   Future<int> getLikeCount(int postId) async {
     final result = await supabase
         .from('likes')
@@ -66,7 +62,6 @@ class PostRepository {
     return result.length;
   }
 
-  /// 게시물 하나 조회
   Future<Map<String, dynamic>> getPostById(int id) async {
     final result = await supabase
         .from('posts')
@@ -77,12 +72,10 @@ class PostRepository {
     return result ?? {};
   }
 
-  /// 게시물 이미지 수정
   Future<void> updatePostImage(int id, String newUrl) async {
     await supabase.from('posts').update({'image_url': newUrl}).eq('id', id);
   }
 
-  /// 전체 게시물 조회
   Future<List<Map<String, dynamic>>> getAllPosts() async {
     final result = await supabase
         .from('posts')
@@ -92,25 +85,19 @@ class PostRepository {
     return List<Map<String, dynamic>>.from(result);
   }
 
-  /// 게시물 생성
   Future<int?> insertPost({
     required int userId,
     required String imageUrl,
   }) async {
     final result = await supabase
         .from('posts')
-        .insert({
-          'user_id': userId,
-          'image_url': imageUrl,
-          'topic_id': 3, // 필요하면 나중에 파라미터로 변경
-        })
+        .insert({'user_id': userId, 'image_url': imageUrl, 'topic_id': 3})
         .select('id')
         .maybeSingle();
 
     return result?['id'];
   }
 
-  /// 게시물 + 댓글 + 좋아요 삭제
   Future<void> deletePostWithRelations(int postId) async {
     await supabase.from('likes').delete().eq('post_id', postId);
     await supabase.from('comments').delete().eq('post_id', postId);
