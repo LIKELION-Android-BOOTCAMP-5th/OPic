@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
+import 'package:opicproject/core/models/block_model.dart';
 import 'package:opicproject/core/models/friend_model.dart';
 import 'package:opicproject/core/models/friend_request_model.dart';
 import 'package:opicproject/core/models/user_model.dart';
@@ -19,6 +20,9 @@ class FriendViewModel extends ChangeNotifier {
   List<FriendRequest> _friendRequests = [];
   List<FriendRequest> get friendRequests => _friendRequests;
 
+  List<BlockUser> _blockUsers = [];
+  List<BlockUser> get blockUsers => _blockUsers;
+
   bool shouldShowScrollUpButton = false;
 
   UserInfo? _certainUser;
@@ -33,8 +37,8 @@ class FriendViewModel extends ChangeNotifier {
   bool _isFriend = false;
   bool get isFriend => _isFriend;
 
-  bool _showFriendRequests = false;
-  bool get showFriendRequests => _showFriendRequests;
+  int _tabNumber = 0;
+  int get tabNumber => _tabNumber;
 
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
@@ -104,8 +108,8 @@ class FriendViewModel extends ChangeNotifier {
     });
   }
 
-  void changeTab(bool showRequests) {
-    _showFriendRequests = showRequests;
+  void changeTab(int tab) {
+    _tabNumber = tab;
     notifyListeners();
   }
 
@@ -114,6 +118,7 @@ class FriendViewModel extends ChangeNotifier {
     currentPage = 1;
     await fetchFriends(currentPage, loginUserId);
     await fetchFriendRequests(currentPage, loginUserId);
+    await fetchBlockUsersWithPager(currentPage, loginUserId);
   }
 
   void moveScrollUp() {
@@ -149,6 +154,10 @@ class FriendViewModel extends ChangeNotifier {
       currentPage,
       loginUserId,
     );
+    _blockUsers = (await _repository.fetchBlockedUserWithPager(
+      currentPage,
+      loginUserId,
+    ));
 
     _isLoading = false;
     notifyListeners();
@@ -269,5 +278,43 @@ class FriendViewModel extends ChangeNotifier {
   Future<void> editNickname(int loginUserId, String nickname) async {
     await _repository.editNickname(loginUserId, nickname);
     await fetchAUser(loginUserId);
+  }
+
+  // 차단 사용자 불러오기
+  Future<void> fetchBlockUsersWithPager(
+    int currentPage,
+    int loginUserId,
+  ) async {
+    _blockUsers = await _repository.fetchBlockedUserWithPager(
+      currentPage,
+      loginUserId,
+    );
+    notifyListeners();
+  }
+
+  Future<void> fetchMoreBlockUsersWithPager(int loginUserId) async {
+    if (_isLoading) return;
+
+    _isLoading = true;
+    currentPage += 1;
+    final fetchedBlockUsers = await _repository.fetchBlockedUserWithPager(
+      currentPage,
+      loginUserId,
+    );
+
+    if (fetchedBlockUsers.isNotEmpty) {
+      _blockUsers.addAll(fetchedBlockUsers);
+    } else {
+      currentPage -= 1;
+    }
+    _isLoading = false;
+    notifyListeners();
+    debugPrint("FriendViewmodel fetchedFriends 호출됨");
+  }
+
+  // 차단 해제하기
+  Future<void> unblockUser(int loginUserId, int userId) async {
+    await _repository.unblockUser(loginUserId, userId);
+    notifyListeners();
   }
 }

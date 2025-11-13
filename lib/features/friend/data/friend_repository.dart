@@ -1,5 +1,6 @@
 import 'package:opicproject/core/manager/dio_manager.dart';
 import 'package:opicproject/core/manager/supabase_manager.dart';
+import 'package:opicproject/core/models/block_model.dart';
 import 'package:opicproject/core/models/friend_model.dart';
 import 'package:opicproject/core/models/friend_request_model.dart';
 import 'package:opicproject/core/models/user_model.dart';
@@ -81,5 +82,21 @@ class FriendRepository {
   // 닉네임 변경하기
   Future<void> editNickname(int loginUserId, String nickname) async {
     await SupabaseManager.shared.editNickname(loginUserId, nickname);
+  }
+
+  // 차단 사용자 목록 불러오기 (pager)
+  Future<List<BlockUser>> fetchBlockedUserWithPager(
+    int currentPage,
+    int loginUserId,
+  ) async {
+    return await DioManager.shared.fetchBlockUsersWithPager(
+      currentPage: currentPage,
+      userId: loginUserId,
+    );
+  }
+
+  // 차단 해제하기
+  Future<void> unblockUser(int loginUserId, int userId) async {
+    await SupabaseManager.shared.unblockUser(loginUserId, userId);
   }
 }
