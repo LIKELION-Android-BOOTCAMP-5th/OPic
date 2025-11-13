@@ -8,23 +8,11 @@ import 'package:opicproject/features/home/viewmodel/home_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
-  //TODO:뷰모델 사용시 위의 const생성자로 교체
-  const HomeScreen({super.key});
-  // HomeScreen({super.key});
-  //TODO:임시 더미 데이터  나중에 지워야함
-  // final List<Post> _posts = Post.fixedDummyPosts;
-
-  // //TODO:현재 주제 뷰모델 사용시 삭제예정
-  // final String currentTopic = Post.fixedDummyPosts.isNotEmpty
-  //     ? Post.fixedDummyPosts.first.topic
-  //     : '주제 없음';
-
   @override
   Widget build(BuildContext context) {
     final viewmodel = context.watch<HomeViewModel>();
     final homeViewmodel = context.watch<HomeViewModel>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // context.read<HomeViewModel>().loadLoginUserId();
       context.read<HomeViewModel>().initHome();
 
       if (viewmodel.posts.isEmpty) {
