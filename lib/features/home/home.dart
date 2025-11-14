@@ -14,11 +14,8 @@ class HomeScreen extends StatelessWidget {
     final homeViewmodel = context.watch<HomeViewModel>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HomeViewModel>().initHome();
-
-      if (viewmodel.posts.isEmpty) {
-        context.read<HomeViewModel>().loadPosts();
-      }
     });
+
     return Container(
       child: Scaffold(
         body: Column(
@@ -51,13 +48,33 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          homeViewmodel.todayTopic?['content'] ?? "주제가 없습니다.",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                            color: AppColors.opicBlack,
+                        //데이트피커
+                        GestureDetector(
+                          onTap: () async {
+                            DateTime? selectedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2100),
+                            );
+
+                            if (selectedDate != null) {
+                              await homeViewmodel.fetchTopicByDate(
+                                selectedDate,
+                              );
+                              Fluttertoast.showToast(
+                                msg: '선택한 날짜: ${selectedDate.toLocal()}',
+                              );
+                            }
+                          },
+                          child: Text(
+                            homeViewmodel.todayTopic?['content'] ?? "주제가 없습니다.",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                              color: AppColors.opicBlack,
+                            ),
                           ),
                         ),
                       ],
@@ -71,44 +88,39 @@ class HomeScreen extends StatelessWidget {
 
             //게시물 영역
             Expanded(
-              child: Builder(
-                builder: (context) {
-                  if (viewmodel.posts.isEmpty) {
-                    return const Text("게시물이 없습니다");
-                  }
-                  return ListView.builder(
-                    itemCount: viewmodel.posts.length,
-                    itemBuilder: (context, index) {
-                      final post = viewmodel.posts[index];
-                      return PostCard(post: post);
-                    },
-                  );
-                },
-              ),
+              child: viewmodel.posts.isEmpty
+                  ? const Center(child: Text("게시물이 없습니다"))
+                  : ListView.builder(
+                      itemCount: viewmodel.posts.length,
+                      itemBuilder: (context, index) {
+                        final post = viewmodel.posts[index];
+                        return PostCard(post: post);
+                      },
+                    ),
             ),
           ],
         ),
-
-        floatingActionButton: FloatingActionButton(
-          shape: CircleBorder(),
-          backgroundColor: AppColors.opicSoftBlue,
-          onPressed: () {
-            showDialog(
-              context: context,
-              barrierColor: AppColors.opicLightBlack.withOpacity(0.6),
-              builder: (context) => addPostPopup(),
-            );
-          },
-          child: const Icon(Icons.edit, color: AppColors.opicWhite),
-        ),
+        floatingActionButton: viewmodel.isToday
+            ? FloatingActionButton(
+                shape: CircleBorder(),
+                backgroundColor: AppColors.opicSoftBlue,
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    barrierColor: AppColors.opicLightBlack.withOpacity(0.6),
+                    builder: (context) => addPostPopup(),
+                  );
+                },
+                child: const Icon(Icons.edit, color: AppColors.opicWhite),
+              )
+            : null,
       ),
     );
   }
 }
 
-//계시물 컴포넌트
+//게시물 컴포넌트
 class PostCard extends StatelessWidget {
-  // final Post post;
   final Map<String, dynamic> post;
   const PostCard({super.key, required this.post});
 
@@ -168,7 +180,7 @@ class PostCard extends StatelessWidget {
           ),
         ),
 
-        //계시글 구분선
+        //게시글 구분선
         const Divider(
           height: 20,
           thickness: 0.5,

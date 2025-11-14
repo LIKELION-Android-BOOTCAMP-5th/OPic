@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:opicproject/features/home/data/home_repository.dart';
 import 'package:opicproject/features/post/data/post_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeViewModel extends ChangeNotifier {
   final PostRepository repository = PostRepository.shared;
@@ -9,13 +10,24 @@ class HomeViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> topics = [];
   Map<String, dynamic>? todayTopic;
   int currentTopicIndex = 0;
-
+  bool _isInitialized = false;
   List<Map<String, dynamic>> posts = [];
 
-  // 게시글 올리기
-  Future<void> loadPosts() async {
-    posts = await repository.getAllPosts();
-    notifyListeners();
+  bool get isToday {
+    if (todayTopic == null || todayTopic!['uploaded_at'] == null) {
+      return false;
+    }
+
+    try {
+      final topicDate = DateTime.parse(todayTopic!['uploaded_at']);
+      final now = DateTime.now();
+
+      return topicDate.year == now.year &&
+          topicDate.month == now.month &&
+          topicDate.day == now.day;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<void> fetchPosts() async {
@@ -23,9 +35,12 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadTopics() async {
+  Future<void> fetchTopics() async {
     todayTopic = await topicRepository.fetchTodayTopic();
-    notifyListeners();
+
+    if (todayTopic != null && todayTopic!['id'] != null) {
+      await fetchPostsByTopicId(todayTopic!['id']);
+    }
   }
 
   void _setTodayTopic() {
@@ -39,7 +54,54 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   Future<void> initHome() async {
-    await loadPosts();
-    await loadTopics();
+    if (_isInitialized) return;
+    await fetchTopics();
+    _isInitialized = true;
+  }
+
+  Future<void> fetchTopicByDate(DateTime selectedDate) async {
+    final startOfDay = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      0,
+      0,
+      0,
+    );
+
+    final endOfDay = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      23,
+      59,
+      59,
+    );
+
+    final result = await Supabase.instance.client
+        .from('topic')
+        .select('id, content, uploaded_at')
+        .gte('uploaded_at', startOfDay.toIso8601String())
+        .lte('uploaded_at', endOfDay.toIso8601String())
+        .maybeSingle();
+
+    if (result != null && result['content'] != null) {
+      todayTopic = {
+        'id': result['id'],
+        'content': result['content'],
+        'uploaded_at': result['uploaded_at'],
+      };
+
+      await fetchPostsByTopicId(result['id']);
+    } else {
+      todayTopic = {'content': "주제 없음"};
+      posts = [];
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchPostsByTopicId(int topicId) async {
+    posts = await repository.getPostsByTopicId(topicId);
+    notifyListeners();
   }
 }

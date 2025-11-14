@@ -1,5 +1,4 @@
 import 'package:opicproject/core/manager/supabase_manager.dart';
-import 'package:opicproject/core/models/post_model.dart';
 
 class PostRepository {
   static final PostRepository shared = PostRepository._internal();
@@ -15,7 +14,7 @@ class PostRepository {
         .select('id')
         .eq('user_id', userId)
         .eq('post_id', postId);
-    //좋아요 함, 취소함
+
     if (result.isEmpty) {
       await supabase.from('likes').insert({
         'user_id': userId,
@@ -44,13 +43,14 @@ class PostRepository {
 
   Future<List<Map<String, dynamic>>> fetchComments(int postId) async {
     final supabase = SupabaseManager.shared.supabase;
+
     final result = await supabase
         .from('comments')
         .select('*, user:user_id(id, nickname)')
         .eq('post_id', postId)
         .order('created_at', ascending: true);
 
-    return result;
+    return List<Map<String, dynamic>>.from(result);
   }
 
   Future<int> getLikeCount(int postId) async {
@@ -58,13 +58,14 @@ class PostRepository {
         .from('likes')
         .select('id')
         .eq('post_id', postId);
+
     return result.length;
   }
 
   Future<Map<String, dynamic>> getPostById(int id) async {
     final result = await supabase
         .from('posts')
-        .select('*, user:user_id(nickname)')
+        .select('*, user:user_id(id, nickname)')
         .eq('id', id)
         .maybeSingle();
 
@@ -80,23 +81,36 @@ class PostRepository {
         .from('posts')
         .select()
         .order('id', ascending: false);
+
     return List<Map<String, dynamic>>.from(result);
   }
 
-  Future<int> insertPost({
+  Future<int?> insertPost({
     required int userId,
     required String imageUrl,
+    required int topicId,
   }) async {
     final result = await supabase
         .from('posts')
-        .insert({'user_id': userId, 'image_url': imageUrl, 'topic_id': 3})
+        .insert({'user_id': userId, 'image_url': imageUrl, 'topic_id': topicId})
         .select('id')
         .maybeSingle();
 
     return result?['id'];
   }
 
-  Future<Post?> fetchPostWriterId(int postId) async {
-    return await SupabaseManager.shared.fetchPostWriterId(postId);
+  Future<void> deletePostWithRelations(int postId) async {
+    await supabase.from('likes').delete().eq('post_id', postId);
+    await supabase.from('comments').delete().eq('post_id', postId);
+    await supabase.from('posts').delete().eq('id', postId);
+  }
+
+  Future<List<Map<String, dynamic>>> getPostsByTopicId(int topicId) async {
+    final result = await supabase
+        .from('posts')
+        .select()
+        .eq('topic_id', topicId)
+        .order('id', ascending: false);
+    return List<Map<String, dynamic>>.from(result);
   }
 }

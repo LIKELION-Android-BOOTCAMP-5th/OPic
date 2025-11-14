@@ -1,31 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:opicproject/features/post/ui/post_detail_page.dart';
+import 'package:opicproject/core/app_colors.dart';
+import 'package:opicproject/features/post/viewmodel/post_viewmodel.dart';
+import 'package:provider/provider.dart';
 
-class DeletePopup extends StatefulWidget {
-  const DeletePopup({super.key});
+class DeletePopup extends StatelessWidget {
+  final int postId;
 
-  @override
-  State<DeletePopup> createState() => _DeletePopupState();
-}
+  const DeletePopup({super.key, required this.postId});
 
-class _DeletePopupState extends State<DeletePopup> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Color(0xfffefefe),
+      backgroundColor: const Color(0xfffefefe),
       child: Padding(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
               width: double.infinity,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: const [
                   Text("게시물 삭제", style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(height: 15),
                   Text(
@@ -40,28 +38,26 @@ class _DeletePopupState extends State<DeletePopup> {
               ),
             ),
 
-            SizedBox(height: 24),
-
-            Padding(padding: EdgeInsets.only(bottom: 10)),
+            const SizedBox(height: 24),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      await context.read<PostViewModel>().deletePost(postId);
+
+                      Navigator.pop(context);
                       context.go('/home');
-                      showToast("게시물이 삭제되었습니다.");
+                      _showToast(context, "게시물이 삭제되었습니다.");
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xff95b7db),
-                      foregroundColor: Color(0xfffefefe),
-                      padding: EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: const Color(0xff95b7db),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       "삭제하기",
                       style: TextStyle(
                         fontSize: 16,
@@ -71,21 +67,20 @@ class _DeletePopupState extends State<DeletePopup> {
                     ),
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.pop();
+                      Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffe8e8dc),
-                      foregroundColor: Color(0xfffefefe),
-                      padding: EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: const Color(0xffe8e8dc),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       "닫기",
                       style: TextStyle(
                         fontSize: 16,
@@ -99,6 +94,16 @@ class _DeletePopupState extends State<DeletePopup> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showToast(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.opicBlue,
+        duration: const Duration(seconds: 1),
       ),
     );
   }

@@ -5,7 +5,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/core/manager/supabase_manager.dart';
-import 'package:opicproject/core/models/post_model.dart';
 import 'package:opicproject/features/post/data/post_repository.dart';
 
 class PostViewModel extends ChangeNotifier {
@@ -15,22 +14,22 @@ class PostViewModel extends ChangeNotifier {
   int likeCount = 0;
   bool buttonLike = true;
   String loginUserName = "친구1";
+
   File? selectedImage;
   final commentListController = TextEditingController();
   List<Map<String, dynamic>> commentList = [];
-  int? _loadedPostId;
+
   int? friendUserId;
   String postWriter = "";
 
   DateTime now = DateTime.now();
   late String formattedDate = DateFormat('yyyy-MM-dd').format(now);
-  late String commentDate = DateFormat('yyyy-MM-dd HH:mm').format(now);
   String todayTopic = "겨울풍경";
 
   Future<void> fetchPostById(int id) async {
     post = await _repository.getPostById(id);
+
     friendUserId = post?['user']?['id'];
-    postWriter = post?['user']?['nickname'] ?? "";
     postWriter = post?['user']?['nickname'] ?? "이름 없음";
 
     final created = post?['created_at'];
@@ -50,7 +49,7 @@ class PostViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setImage(File image) {
+  void setImage(File? image) {
     selectedImage = image;
     notifyListeners();
   }
@@ -72,13 +71,7 @@ class PostViewModel extends ChangeNotifier {
 
     await _repository.commentSend(userId, postId, text);
 
-    commentList.add({
-      'user_id': userId,
-      'post_id': postId,
-      'text': text,
-      'created_at': DateTime.now().toIso8601String(),
-      'is_deleted': false,
-    });
+    await fetchComments(postId);
 
     commentListController.clear();
     Fluttertoast.showToast(msg: "댓글 작성이 완료되었습니다.");
@@ -93,7 +86,6 @@ class PostViewModel extends ChangeNotifier {
   void clearPostData() {
     post = null;
     commentList.clear();
-    _loadedPostId = null;
     notifyListeners();
   }
 
@@ -104,38 +96,24 @@ class PostViewModel extends ChangeNotifier {
   }
 
   Future<void> loadLoginUserInfo() async {
-    final authId = SupabaseManager.shared.supabase.auth.currentUser?.id;
-
-    if (authId == null) {
-      loginUserName = "알수없음";
-      notifyListeners();
-      return;
-    }
-
-    final data = await SupabaseManager.shared.supabase
-        .from('user')
-        .select()
-        .eq('uuid', authId)
-        .maybeSingle();
-
-    if (data != null) {
-      loginUserName = data['nickname'] ?? "이름없음";
-    }
-
+    loginUserName = AuthManager.shared.userInfo?.nickname ?? "알수없음";
     notifyListeners();
   }
 
-  Future<int?> createPost(String imageUrl) async {
-    final userId = AuthManager.shared.userInfo?.id;
+  Future<void> createPost(String imageUrl, int topicId) async {
+    final authManager = AuthManager.shared;
+    final userId = authManager.userInfo?.id;
 
     if (userId == null) {
-      print("로그인된 사용자 없음");
-      return null;
+      print("로그인이 필요합니다.");
+      return;
     }
 
-    final id = await _repository.insertPost(userId: userId, imageUrl: imageUrl);
-
-    return id;
+    await _repository.insertPost(
+      userId: userId,
+      imageUrl: imageUrl,
+      topicId: topicId,
+    );
   }
 
   Future<String?> uploadImageToSupabase(File file) async {
@@ -147,10 +125,24 @@ class PostViewModel extends ChangeNotifier {
     return supabase.storage.from('post_images').getPublicUrl(fileName);
   }
 
-  Post? _thisPost;
-  Post? get thisPost => _thisPost;
+  Future<void> deletePost(int postId) async {
+    await _repository.deletePostWithRelations(postId);
+    clearPostData();
+  }
 
-  Future<void> fetchPostWriterId(int postId) async {
-    _thisPost = await _repository.fetchPostWriterId(postId);
+  Future<void> deleteComment(int commentId) async {
+    try {
+      await SupabaseManager.shared.supabase
+          .from('comments')
+          .delete()
+          .eq('id', commentId);
+
+      commentList.removeWhere((comment) => comment['id'] == commentId);
+      notifyListeners();
+      Fluttertoast.showToast(msg: "댓글이 삭제되었습니다.");
+    } catch (e) {
+      print("댓글 삭제 실패: $e");
+      Fluttertoast.showToast(msg: "댓글 삭제에 실패했습니다.");
+    }
   }
 }
