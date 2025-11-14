@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
+import 'package:opicproject/features/post/component/edit_menu_widget.dart';
 import 'package:opicproject/features/post/ui/post_delete_popup.dart';
 import 'package:opicproject/features/post/ui/post_edit_popup.dart';
 import 'package:opicproject/features/post/viewmodel/post_viewmodel.dart';
@@ -17,383 +18,497 @@ class PostDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewmodel = context.watch<PostViewModel>();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      viewmodel.fetchPostById(postId);
+      viewmodel.fetchPostById(this.postId);
       viewmodel.loadLoginUserInfo();
     });
 
     final postWriterUserId = viewmodel.friendUserId ?? 0;
 
+    final imageUrl = viewmodel.post?['image_url'] ?? '';
+    final currentPostId = viewmodel.post?['id'] ?? 0;
+
+    if (viewmodel.post == null) {
+      return Scaffold(
+        body: SafeArea(
+          child: Container(
+            color: AppColors.opicBackground,
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.opicBlue),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: BoxDecoration(color: AppColors.opicBackground),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back Button
-              IconButton(
-                onPressed: () => context.go('/home'),
-                icon: const Icon(Icons.keyboard_backspace),
-              ),
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              context.go('/home/feed/$postWriterUserId');
-                            },
-                            child: Text(
-                              viewmodel.postWriter,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            viewmodel.formattedDate,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF515151),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Post Image
-                      Image.network(
-                        viewmodel.post?['image_url'],
-                        width: double.infinity,
-                        height: 350,
-                        fit: BoxFit.fill,
-                      ),
-                      const SizedBox(height: 10),
-
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              viewmodel.buttonLike
-                                  ? Icons.favorite_border
-                                  : Icons.favorite,
-                            ),
-                            iconSize: 20,
-                            color: AppColors.opicRed,
-                            onPressed: () {
-                              final loginUserId =
-                                  AuthManager.shared.userInfo?.id ?? 0;
-                              viewmodel.toggleLike(loginUserId, postId);
-                              viewmodel.buttonLike = !viewmodel.buttonLike;
-                            },
-                          ),
-                          Text(
-                            "좋아요 ${viewmodel.likeCount}",
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.opicBlack,
-                            ),
-                          ),
-                          const Spacer(),
-                          (AuthManager.shared.userInfo?.id ==
-                                  viewmodel.friendUserId)
-                              ? Row(
-                                  children: [
-                                    ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.opicSoftBlue,
-                                        fixedSize: const Size(110, 10),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          barrierColor: AppColors.opicLightBlack
-                                              .withOpacity(0.6),
-                                          builder: (context) =>
-                                              const EditPopup(),
-                                        );
-                                      },
-                                      icon: Icon(
-                                        Icons.edit,
-                                        color: AppColors.opicWhite,
-                                        size: 13,
-                                      ),
-                                      label: Text(
-                                        "수정하기",
-                                        style: TextStyle(
-                                          color: AppColors.opicWhite,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.opicRed,
-                                        fixedSize: const Size(110, 10),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          barrierColor: Colors.black
-                                              .withOpacity(0.6),
-                                          builder: (_) => DeletePopup(
-                                            postId: viewmodel.post?['id'] ?? 0,
-                                          ),
-                                        );
-                                      },
-                                      icon: Icon(
-                                        Icons.delete_outline,
-                                        color: AppColors.opicWhite,
-                                        size: 13,
-                                      ),
-                                      label: Text(
-                                        "삭제하기",
-                                        style: TextStyle(
-                                          color: AppColors.opicWhite,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : TextButton.icon(
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      barrierColor: Colors.black.withOpacity(
-                                        0.6,
-                                      ),
-                                      builder: (context) => PostReportScreen(
-                                        postId: viewmodel.post?['id'] ?? 0,
-                                      ),
-                                    );
-                                  },
-                                  icon: Icon(
-                                    Icons.outlined_flag,
-                                    color: AppColors.opicRed,
-                                  ),
-                                  label: const Text('신고하기'),
-                                ),
-                        ],
-                      ),
-                      const Divider(),
-
-                      Row(
-                        children: [
-                          Text(
-                            "주제:",
-                            style: TextStyle(color: AppColors.opicLightBlack),
-                          ),
-                          TextButton(
-                            onPressed: () => context.go('/home'),
-                            child: Text(
-                              viewmodel.todayTopic,
-                              style: TextStyle(color: AppColors.opicSoftBlue),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-
                       Container(
-                        width: double.infinity,
-                        color: AppColors.opicBackground,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        decoration: BoxDecoration(
+                          color: AppColors.opicWhite,
+                          border: Border(
+                            top: BorderSide(
+                              color: AppColors.opicSoftBlue,
+                              width: 0.5,
+                            ),
+                            bottom: BorderSide(
+                              color: AppColors.opicSoftBlue,
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 5.0,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
                               children: [
-                                const Padding(
-                                  padding: EdgeInsets.all(8),
-                                  child: Text("댓글"),
+                                // Back Button
+                                IconButton(
+                                  onPressed: () => context.go('/home'),
+                                  icon: const Icon(Icons.keyboard_backspace),
                                 ),
-                                Text(
-                                  "${viewmodel.commentList.length}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                TextButton(
+                                  onPressed: () {
+                                    context.go('/home/feed/$postWriterUserId');
+                                  },
+                                  child: Text(
+                                    viewmodel.postWriter,
+                                    style: const TextStyle(
+                                      color: AppColors.opicSoftBlue,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                            Center(
-                              child: viewmodel.commentList.isEmpty
-                                  ? const Text("첫 댓글을 남겨보세요!")
-                                  : ListView.builder(
-                                      itemCount: viewmodel.commentList.length,
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemBuilder: (context, index) {
-                                        final comment =
-                                            viewmodel.commentList[index];
-
-                                        final loginUserNickname =
-                                            AuthManager
-                                                .shared
-                                                .userInfo
-                                                ?.nickname ??
-                                            '';
-                                        final commentWriterNickname =
-                                            comment['user']?['nickname'] ?? '';
-
-                                        return Container(
-                                          padding: const EdgeInsets.only(
-                                            left: 10,
-                                          ),
-                                          color: AppColors.opicWhite,
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  IconButton(
-                                                    onPressed: () {},
-                                                    icon: const Icon(
-                                                      Icons.person,
-                                                    ),
-                                                  ),
-                                                  Text(commentWriterNickname),
-                                                  const Spacer(),
-                                                  Column(
-                                                    children: [
-                                                      Text(
-                                                        comment['created_at']
-                                                                ?.toString()
-                                                                .split('T')
-                                                                .first ??
-                                                            '',
-                                                        style: TextStyle(
-                                                          fontSize: 10,
-                                                          color: AppColors
-                                                              .opicBlack,
-                                                        ),
-                                                      ),
-                                                      if (loginUserNickname ==
-                                                          commentWriterNickname)
-                                                        ElevatedButton.icon(
-                                                          style: ElevatedButton.styleFrom(
-                                                            backgroundColor:
-                                                                AppColors
-                                                                    .opicRed,
-                                                            fixedSize:
-                                                                const Size(
-                                                                  110,
-                                                                  10,
-                                                                ),
-                                                            shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    12,
-                                                                  ),
-                                                            ),
-                                                          ),
-                                                          onPressed: () {
-                                                            final commentId =
-                                                                comment['id'];
-                                                            viewmodel
-                                                                .deleteComment(
-                                                                  commentId,
-                                                                );
-                                                          },
-                                                          icon: Icon(
-                                                            Icons
-                                                                .delete_outline,
-                                                            color: AppColors
-                                                                .opicWhite,
-                                                            size: 13,
-                                                          ),
-                                                          label: Text(
-                                                            "삭제하기",
-                                                            style: TextStyle(
-                                                              color: AppColors
-                                                                  .opicWhite,
-                                                              fontSize: 12,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                ],
-                                              ),
-                                              Container(
-                                                padding: const EdgeInsets.only(
-                                                  left: 20,
-                                                  bottom: 8,
-                                                ),
-                                                width: double.infinity,
-                                                child: Text(
-                                                  comment['text'] ?? '',
-                                                  textAlign: TextAlign.start,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 20.0),
+                              child: Text(
+                                viewmodel.formattedDate,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.opicBlack,
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 20),
                           ],
                         ),
                       ),
-                      const Divider(),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.opicBackground,
+                        ),
+                        child: // Post Image
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Image.network(
+                            viewmodel.post?['image_url'],
+                            width: double.infinity,
+                            height: 350,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.opicBackground,
+                          border: Border(
+                            top: BorderSide(
+                              color: AppColors.opicSoftBlue,
+                              width: 0.2,
+                            ),
+                            bottom: BorderSide(
+                              color: AppColors.opicSoftBlue,
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10.0,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          viewmodel.buttonLike
+                                              ? Icons.favorite_border
+                                              : Icons.favorite,
+                                        ),
+                                        iconSize: 20,
+                                        color: AppColors.opicRed,
+                                        onPressed: () {
+                                          final loginUserId =
+                                              AuthManager.shared.userInfo?.id ??
+                                              0;
+                                          viewmodel.toggleLike(
+                                            loginUserId,
+                                            postId,
+                                          );
+                                          viewmodel.buttonLike =
+                                              !viewmodel.buttonLike;
+                                        },
+                                      ),
+                                      Text(
+                                        "좋아요 ${viewmodel.likeCount}",
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.opicBlack,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  (AuthManager.shared.userInfo?.id ==
+                                          viewmodel.friendUserId)
+                                      ? IconButton(
+                                          icon: Icon(
+                                            Icons.more_horiz,
+                                            color: AppColors.opicBlack,
+                                          ),
+                                          onPressed: () {
+                                            showModalBottomSheet(
+                                              context: context,
+                                              backgroundColor:
+                                                  AppColors.opicWarmGrey,
+                                              builder: (context) => EditMenu(
+                                                options: [
+                                                  MenuOption(
+                                                    icon: Icons.edit_rounded,
+                                                    text: '수정하기',
+                                                    onTap: () {
+                                                      showDialog(
+                                                        context: context,
+                                                        barrierColor: AppColors
+                                                            .opicLightBlack
+                                                            .withOpacity(0.6),
+                                                        builder: (context) =>
+                                                            const EditPopup(),
+                                                      );
+                                                    },
+                                                  ),
+                                                  MenuOption(
+                                                    icon: Icons.delete_rounded,
+                                                    text: '삭제하기',
+                                                    onTap: () {
+                                                      showDialog(
+                                                        context: context,
+                                                        barrierColor: Colors
+                                                            .black
+                                                            .withOpacity(0.6),
+                                                        builder: (_) => DeletePopup(
+                                                          postId:
+                                                              viewmodel
+                                                                  .post?['id'] ??
+                                                              0,
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : TextButton.icon(
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              barrierColor: Colors.black
+                                                  .withOpacity(0.6),
+                                              builder: (context) =>
+                                                  PostReportScreen(
+                                                    postId:
+                                                        viewmodel.post?['id'] ??
+                                                        0,
+                                                  ),
+                                            );
+                                          },
+                                          icon: Icon(
+                                            Icons.outlined_flag,
+                                            color: AppColors.opicCoolGrey,
+                                          ),
+                                          label: const Text(
+                                            '신고하기',
+                                            style: TextStyle(
+                                              color: AppColors.opicCoolGrey,
+                                            ),
+                                          ),
+                                        ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.opicBackground,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: AppColors.opicSoftBlue,
+                              width: 0.2,
+                            ),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                "주제:",
+                                style: TextStyle(color: AppColors.opicCoolGrey),
+                              ),
+                              TextButton(
+                                onPressed: () => context.go('/home'),
+                                child: Text(
+                                  viewmodel.todayTopic,
+                                  style: TextStyle(
+                                    color: AppColors.opicSoftBlue,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: double.infinity,
+                        color: AppColors.opicBackground,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.all(8),
+                                    child: Text("댓글"),
+                                  ),
+                                  Text(
+                                    "${viewmodel.commentList.length}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Center(
+                                child: viewmodel.commentList.isEmpty
+                                    ? const Text(
+                                        "첫 댓글을 남겨보세요!",
+                                        style: TextStyle(
+                                          color: AppColors.opicCoolGrey,
+                                        ),
+                                      )
+                                    : ListView.builder(
+                                        itemCount: viewmodel.commentList.length,
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemBuilder: (context, index) {
+                                          final comment =
+                                              viewmodel.commentList[index];
+
+                                          final loginUserNickname =
+                                              AuthManager
+                                                  .shared
+                                                  .userInfo
+                                                  ?.nickname ??
+                                              '';
+                                          final commentWriterNickname =
+                                              comment['user']?['nickname'] ??
+                                              '';
+
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0,
+                                              vertical: 1.0,
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                bottom: 8.0,
+                                              ),
+                                              child: Container(
+                                                padding: const EdgeInsets.only(
+                                                  left: 10,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.opicWhite
+                                                      .withOpacity(0.7),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                        Radius.circular(20.0),
+                                                      ),
+                                                  border: Border.all(
+                                                    color:
+                                                        AppColors.opicSoftBlue,
+                                                    width: 0.3,
+                                                  ),
+                                                ),
+                                                child: Column(
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        IconButton(
+                                                          onPressed: () {},
+                                                          icon: const Icon(
+                                                            Icons.person,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          commentWriterNickname,
+                                                        ),
+                                                        SizedBox(width: 8),
+                                                        // const Spacer(),
+                                                        Expanded(
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              Text(
+                                                                comment['created_at']
+                                                                        ?.toString()
+                                                                        .split(
+                                                                          'T',
+                                                                        )
+                                                                        .first ??
+                                                                    '',
+                                                                style: TextStyle(
+                                                                  fontSize: 10,
+                                                                  color: AppColors
+                                                                      .opicBlack,
+                                                                ),
+                                                              ),
+                                                              if (loginUserNickname ==
+                                                                  commentWriterNickname)
+                                                                IconButton(
+                                                                  onPressed: () {
+                                                                    final commentId =
+                                                                        comment['id'];
+                                                                    viewmodel
+                                                                        .deleteComment(
+                                                                          commentId,
+                                                                        );
+                                                                  },
+                                                                  icon: Icon(
+                                                                    Icons
+                                                                        .cancel_outlined,
+                                                                    color: AppColors
+                                                                        .opicRed,
+                                                                    size: 20,
+                                                                  ),
+                                                                ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 20,
+                                                            bottom: 8,
+                                                          ),
+                                                      width: double.infinity,
+                                                      child: Text(
+                                                        comment['text'] ?? '',
+                                                        textAlign:
+                                                            TextAlign.start,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 35,
-                      color: AppColors.opicWhite,
-                      child: TextField(
-                        controller: viewmodel.commentListController,
-                        decoration: InputDecoration(
-                          hintText: "댓글을 입력하세요..",
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.opicLightBlack,
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: AppColors.opicSoftBlue, width: 0.5),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.8,
+                          color: AppColors.opicWhite,
+                          child: TextField(
+                            controller: viewmodel.commentListController,
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                              ),
+                              hintText: "댓글을 입력하세요..",
+                              border: InputBorder.none,
+                              hintStyle: TextStyle(
+                                fontSize: 15,
+                                color: AppColors.opicLightBlack,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.opicSoftBlue,
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
+                        alignment: Alignment.center,
+                        width: MediaQuery.of(context).size.width * 0.15,
+                        child: IconButton(
+                          icon: const Icon(Icons.send),
+                          iconSize: 20,
+                          color: AppColors.opicWhite,
+                          onPressed: () {
+                            final loginUserId =
+                                AuthManager.shared.userInfo?.id ?? 0;
+                            viewmodel.addComment(loginUserId, postId);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Container(
-                    alignment: Alignment.center,
-                    width: 35,
-                    height: 35,
-                    color: AppColors.opicSoftBlue,
-                    child: IconButton(
-                      icon: const Icon(Icons.send),
-                      iconSize: 20,
-                      color: AppColors.opicWhite,
-                      onPressed: () {
-                        final loginUserId =
-                            AuthManager.shared.userInfo?.id ?? 0;
-                        viewmodel.addComment(loginUserId, postId);
-                      },
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),

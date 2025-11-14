@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/core/manager/supabase_manager.dart';
 import 'package:opicproject/features/post/data/post_repository.dart';
+import 'package:opicproject/features/post/ui/post_detail_page.dart';
 
 class PostViewModel extends ChangeNotifier {
   final PostRepository _repository = PostRepository.shared;
@@ -74,7 +74,7 @@ class PostViewModel extends ChangeNotifier {
     await fetchComments(postId);
 
     commentListController.clear();
-    Fluttertoast.showToast(msg: "댓글 작성이 완료되었습니다.");
+    showToast("댓글 작성이 완료되었습니다.");
     notifyListeners();
   }
 
@@ -139,10 +139,10 @@ class PostViewModel extends ChangeNotifier {
 
       commentList.removeWhere((comment) => comment['id'] == commentId);
       notifyListeners();
-      Fluttertoast.showToast(msg: "댓글이 삭제되었습니다.");
+      showToast("댓글이 삭제되었습니다.");
     } catch (e) {
       print("댓글 삭제 실패: $e");
-      Fluttertoast.showToast(msg: "댓글 삭제에 실패했습니다.");
+      showToast("댓글 삭제에 실패했습니다.");
     }
   }
 }
