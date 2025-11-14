@@ -65,16 +65,28 @@ class SupabaseManager {
   }
 
   // 해당 닉네임을 사용하는 사용자 존재 여부 확인
-  Future<bool> checkIfExist(String userNickname) async {
-    final Map<String, dynamic>? data = await supabase
-        .from("user")
-        .select('*')
-        .eq('nickname', userNickname)
-        .maybeSingle();
-    if (data == null) {
-      return false;
+  Future<bool> checkIfExist(String userNickname, {int? excludeUserId}) async {
+    if (excludeUserId != null) {
+      final List<dynamic> data = await supabase
+          .from("user")
+          .select('id')
+          .eq('nickname', userNickname);
+
+      final filtered = data
+          .where((user) => user['id'] != excludeUserId)
+          .toList();
+      return filtered.isNotEmpty;
+    } else {
+      final Map<String, dynamic>? data = await supabase
+          .from("user")
+          .select('*')
+          .eq('nickname', userNickname)
+          .maybeSingle();
+      if (data == null) {
+        return false;
+      }
+      return true;
     }
-    return true;
   }
 
   // 특정 유저 정보 가져오기 (닉네임으로)

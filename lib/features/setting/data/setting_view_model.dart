@@ -1,3 +1,4 @@
+// setting_view_model.dart
 import 'package:flutter/foundation.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/core/models/alarm_setting_model.dart';
@@ -26,7 +27,6 @@ class SettingViewModel extends ChangeNotifier {
   late bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  // AuthManager 상태 구독
   SettingViewModel() {
     AuthManager.shared.addListener(_onAuthChanged);
   }
@@ -50,8 +50,6 @@ class SettingViewModel extends ChangeNotifier {
     } else if (userId != null && _isInitialized) {
       print("초기화 완료");
     }
-
-    debugPrint("userId: $userId");
   }
 
   Future<void> initialize(int loginUserId) async {
@@ -63,21 +61,37 @@ class SettingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> checkIfExist(String nickname) async {
-    _isExist = await _repository.checkIfExist(nickname);
+  Future<bool> checkIfExist(String nickname, int currentUserId) async {
+    if (_loginUser?.nickname == nickname) {
+      _isExist = false;
+      notifyListeners();
+      return false;
+    }
+
+    _isExist = await _repository.checkIfExist(
+      nickname,
+      excludeUserId: currentUserId,
+    );
     notifyListeners();
+    return _isExist;
   }
 
-  Future<void> editNickname(int loginUserId, String nickname) async {
+  Future<bool> editNickname(int loginUserId, String nickname) async {
+    _isLoading = true;
+    notifyListeners();
+
     final updatedUser = await _repository.editNickname(loginUserId, nickname);
 
     if (updatedUser != null) {
       _loginUser = updatedUser;
-
-      // AuthManager도 업데이트
       AuthManager.shared.updateUserInfo(updatedUser);
-
+      _isLoading = false;
       notifyListeners();
+      return true;
+    } else {
+      _isLoading = false;
+      notifyListeners();
+      return false;
     }
   }
 
@@ -86,7 +100,6 @@ class SettingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 알람 설정 업데이트 추가
   Future<void> updateAlarmSetting({
     required int userId,
     required AlarmSetting newSetting,
