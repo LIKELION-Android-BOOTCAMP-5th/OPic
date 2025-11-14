@@ -89,13 +89,23 @@ class HomeScreen extends StatelessWidget {
             //게시물 영역
             Expanded(
               child: viewmodel.posts.isEmpty
-                  ? const Center(child: Text("게시물이 없습니다"))
-                  : ListView.builder(
-                      itemCount: viewmodel.posts.length,
-                      itemBuilder: (context, index) {
-                        final post = viewmodel.posts[index];
-                        return PostCard(post: post);
-                      },
+                  ? Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.opicBackground,
+                      ),
+                      child: const Center(child: Text("게시물이 없습니다")),
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.opicBackground,
+                      ),
+                      child: ListView.builder(
+                        itemCount: viewmodel.posts.length,
+                        itemBuilder: (context, index) {
+                          final post = viewmodel.posts[index];
+                          return PostCard(post: post);
+                        },
+                      ),
                     ),
             ),
           ],
