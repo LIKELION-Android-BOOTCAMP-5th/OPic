@@ -45,14 +45,14 @@ class HomeScreen extends StatelessWidget {
                                 '오늘의 주제',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: AppColors.opicLightBlack,
+                                  color: AppColors.opicCoolGrey,
                                 ),
                               )
                             : Text(
                                 '그날의 주제',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: AppColors.opicLightBlack,
+                                  color: AppColors.opicCoolGrey,
                                 ),
                               ),
                         const SizedBox(height: 4),
