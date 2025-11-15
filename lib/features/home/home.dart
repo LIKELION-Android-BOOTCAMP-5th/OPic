@@ -145,7 +145,14 @@ class PostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authManager = context.watch<AuthManager>();
+    final viewModel = context.read<HomeViewModel>();
     final loginUserId = authManager.userInfo?.id ?? 0;
+    final postId = post['id'];
+    viewModel.getCommentCount(postId);
+    viewModel.getLikeCount(postId);
+    final likeCounts = viewModel.likes;
+    final commentCounts = viewModel.comments;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -155,7 +162,6 @@ class PostCard extends StatelessWidget {
             if (loginUserId == 0) {
               Fluttertoast.showToast(msg: "로그인 해주세요");
             } else {
-              final postId = post['id'];
               context.go('/post_detail_page/$postId');
             }
           },
@@ -177,7 +183,7 @@ class PostCard extends StatelessWidget {
               const Icon(Icons.favorite, color: AppColors.opicRed, size: 20),
               const SizedBox(width: 4),
               Text(
-                '${post['likes'] ?? 0}',
+                "$likeCounts",
                 style: const TextStyle(color: AppColors.opicRed),
               ),
 
@@ -191,7 +197,7 @@ class PostCard extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                '${post['comments'] ?? 0}',
+                "$commentCounts",
                 style: const TextStyle(color: AppColors.opicCoolGrey),
               ),
             ],

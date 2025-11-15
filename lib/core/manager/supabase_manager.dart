@@ -256,4 +256,24 @@ class SupabaseManager {
     }
     return Post.fromJson(data);
   }
+
+  // 특정 포스트의 좋아요 갯수 가져오기
+  Future<int> getLikeCount(int postId) async {
+    final List<dynamic> data = await supabase
+        .from("likes")
+        .select('id') // id만 가져오기
+        .eq('post_id', postId);
+
+    return data.length;
+  }
+
+  // 특정 포스트의 댓글 갯수 가져오기
+  Future<int> getCommentCount(int postId) async {
+    final List<dynamic> data = await supabase
+        .from("comments")
+        .select('id') // id만 가져오기
+        .eq('post_id', postId);
+
+    return data.length;
+  }
 }

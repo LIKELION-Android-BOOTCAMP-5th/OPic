@@ -104,4 +104,17 @@ class HomeViewModel extends ChangeNotifier {
     posts = await repository.getPostsByTopicId(topicId);
     notifyListeners();
   }
+
+  int likes = 0;
+  int comments = 0;
+
+  Future<void> getLikeCount(int postId) async {
+    likes = await topicRepository.getLikeCounts(postId);
+    notifyListeners();
+  }
+
+  Future<void> getCommentCount(int postId) async {
+    comments = await topicRepository.getCommentCounts(postId);
+    notifyListeners();
+  }
 }
