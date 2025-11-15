@@ -58,17 +58,29 @@ class OpicAppbar extends StatelessWidget implements PreferredSizeWidget {
                         );
                       },
                     ),
-                  Container(
-                    child: IconButton(
-                      onPressed: () {
-                        context.push('/login');
-                      },
-                      icon: Icon(
-                        Icons.exit_to_app,
-                        color: AppColors.opicSoftBlue,
-                      ),
-                    ),
-                  ),
+                  isLoggedIn
+                      ? Container(
+                          child: IconButton(
+                            onPressed: () {
+                              context.push('/login');
+                            },
+                            icon: Icon(
+                              Icons.exit_to_app_rounded,
+                              color: AppColors.opicSoftBlue,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          child: IconButton(
+                            onPressed: () {
+                              context.push('/login');
+                            },
+                            icon: Icon(
+                              Icons.login_rounded,
+                              color: AppColors.opicSoftBlue,
+                            ),
+                          ),
+                        ),
                 ],
               ),
             ],
