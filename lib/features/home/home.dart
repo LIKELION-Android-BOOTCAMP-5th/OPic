@@ -40,13 +40,21 @@ class HomeScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '오늘의 주제',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.opicLightBlack,
-                          ),
-                        ),
+                        viewmodel.isToday
+                            ? Text(
+                                '오늘의 주제',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.opicLightBlack,
+                                ),
+                              )
+                            : Text(
+                                '그날의 주제',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.opicLightBlack,
+                                ),
+                              ),
                         const SizedBox(height: 4),
                         //데이트피커
                         GestureDetector(

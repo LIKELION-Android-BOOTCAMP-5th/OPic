@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
+import 'package:opicproject/features/alarm/data/alarm_view_model.dart';
 import 'package:opicproject/features/auth/viewmodel/auth_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -27,16 +28,35 @@ class OpicAppbar extends StatelessWidget implements PreferredSizeWidget {
               Row(
                 children: [
                   if (isLoggedIn)
-                    Container(
-                      child: IconButton(
-                        onPressed: () {
-                          context.push('/alarm_list_page');
-                        },
-                        icon: Icon(
-                          Icons.notifications_none,
-                          color: AppColors.opicSoftBlue,
-                        ),
-                      ),
+                    Consumer<AlarmViewModel>(
+                      builder: (context, alarmViewModel, child) {
+                        return Stack(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                context.push('/alarm_list_page');
+                              },
+                              icon: Icon(
+                                Icons.notifications_none,
+                                color: AppColors.opicSoftBlue,
+                              ),
+                            ),
+                            if (alarmViewModel.hasUnreadAlarm)
+                              Positioned(
+                                right: 8,
+                                top: 8,
+                                child: Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.opicRed,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
                     ),
                   Container(
                     child: IconButton(
