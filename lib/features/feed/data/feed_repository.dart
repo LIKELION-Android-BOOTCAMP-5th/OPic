@@ -4,6 +4,7 @@ import 'package:opicproject/core/manager/supabase_manager.dart';
 import 'package:opicproject/core/models/friend_model.dart';
 import 'package:opicproject/core/models/post_model.dart';
 import 'package:opicproject/core/models/user_model.dart';
+import 'package:opicproject/features/feed/data/user_relation_state.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FeedRepository {
@@ -23,15 +24,31 @@ class FeedRepository {
     return UserInfo.fromJson(data);
   }
 
+  // 유저 관계 상태 한번에 가져오기
+  Future<UserRelationState> fetchUserRelation(
+    int loginUserId,
+    int targetUserId,
+  ) async {
+    final results = await Future.wait([
+      isUserBlocked(loginUserId, targetUserId),
+      isUserBlockedMe(loginUserId, targetUserId),
+      isFriendRequested(loginUserId, targetUserId),
+    ]);
+
+    return UserRelationState(
+      isBlocked: results[0],
+      isBlockedMe: results[1],
+      isRequested: results[2],
+    );
+  }
+
   // 친구 목록 가져오기
   Future<List<Friend>> fetchFriends({
     int currentPage = 1,
     int perPage = 5,
     required int loginId,
   }) async {
-    final int startIndex = perPage * (currentPage - 1);
-    final int endIndex = startIndex + perPage - 1;
-    final String range = "$startIndex-$endIndex";
+    final range = _calculateRange(page: currentPage, perPage: perPage);
 
     final response = await _dio.get(
       '/friends',
@@ -53,32 +70,34 @@ class FeedRepository {
     }
   }
 
-  // 차단 여부 확인하기 (내가 상대를)
-  Future<bool> checkIfBlocked(int loginUserId, int userId) async {
+  // 공통 관계 확인 하기
+  Future<bool> _checkRelationExists({
+    required String table,
+    required Map<String, Object> conditions,
+  }) async {
     final data = await _supabase
-        .from("block")
+        .from(table)
         .select('id')
-        .eq('user_id', loginUserId)
-        .eq('blocked_user', userId)
+        .match(conditions)
         .maybeSingle();
-    if (data == null) {
-      return false;
-    }
-    return true;
+
+    return data != null;
+  }
+
+  // 차단 여부 확인하기 (내가 상대를)
+  Future<bool> isUserBlocked(int loginUserId, int userId) async {
+    return await _checkRelationExists(
+      table: 'block',
+      conditions: {'user_id': loginUserId, 'blocked_user': userId},
+    );
   }
 
   // 차단 여부 확인하기 (상대가 나를)
-  Future<bool> checkIfBlockedMe(int loginUserId, int userId) async {
-    final data = await _supabase
-        .from("block")
-        .select('id')
-        .eq('user_id', userId)
-        .eq('blocked_user', loginUserId)
-        .maybeSingle();
-    if (data == null) {
-      return false;
-    }
-    return true;
+  Future<bool> isUserBlockedMe(int loginUserId, int userId) async {
+    return await _checkRelationExists(
+      table: 'block',
+      conditions: {'user_id': userId, 'blocked_user': loginUserId},
+    );
   }
 
   // 차단하기
@@ -100,7 +119,7 @@ class FeedRepository {
   }
 
   // 친구 신청 중인지 확인하기
-  Future<bool> checkIfRequested(int loginUserId, int userId) async {
+  Future<bool> isFriendRequested(int loginUserId, int userId) async {
     final data = await _supabase
         .from("friend_request")
         .select('id')
@@ -128,9 +147,7 @@ class FeedRepository {
     int perPage = 15,
     required int userId,
   }) async {
-    final int startIndex = perPage * (currentPage - 1);
-    final int endIndex = startIndex + perPage - 1;
-    final String range = "$startIndex-$endIndex";
+    final range = _calculateRange(page: currentPage, perPage: perPage);
 
     final response = await _dio.get(
       '/posts',
@@ -151,5 +168,12 @@ class FeedRepository {
     } else {
       return List.empty();
     }
+  }
+
+  // range header
+  String _calculateRange({required int page, required int perPage}) {
+    final int startIndex = perPage * (page - 1);
+    final int endIndex = startIndex + perPage - 1;
+    return "$startIndex-$endIndex";
   }
 }

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:opicproject/component/yes_or_close_pop_up.dart';
 import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/core/models/user_model.dart';
+import 'package:opicproject/features/feed/component/feed_empty_state.dart';
+import 'package:opicproject/features/feed/component/feed_header.dart';
+import 'package:opicproject/features/feed/component/feed_post_grid.dart';
 import 'package:opicproject/features/feed/viewmodel/feed_viewmodel.dart';
-import 'package:opicproject/features/friend/viewmodel/friend_view_model.dart';
-import 'package:opicproject/features/post/ui/post_detail_page.dart';
 import 'package:provider/provider.dart';
 
 class FeedScreen extends StatelessWidget {
@@ -22,502 +21,93 @@ class FeedScreen extends StatelessWidget {
     // 현재 로그인한 유저의 아이디
     final loginUserId = authManager.userInfo?.id ?? 0;
 
-    final needsInit =
-        !feedViewModel.isInitialized || feedViewModel.feedUser?.id != userId;
-
-    if (needsInit && loginUserId != 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (feedViewModel.isLoading ||
-            (feedViewModel.isInitialized &&
-                feedViewModel.feedUser?.id == userId)) {
-          return;
-        }
-        feedViewModel.initializeFeed(userId, loginUserId);
-      });
+    if (_needsInitialization(feedViewModel, loginUserId)) {
+      _initializeFeed(context, feedViewModel, loginUserId);
     }
 
     // 피드 주인인 유저 정보
     final feedUser = feedViewModel.feedUser;
 
     if (feedUser == null || feedViewModel.isLoading) {
-      return Container(
-        color: AppColors.opicBackground,
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.opicBlue),
-        ),
-      );
+      return _buildLoadingView();
     }
 
     return Column(
       children: [
-        _buildUserHeader(context, feedViewModel, feedUser, loginUserId),
+        FeedHeader(feedUser: feedUser, loginUserId: loginUserId),
         Expanded(
           child: Container(
             color: AppColors.opicBackground,
-            child: _postList(context, feedViewModel, feedUser),
+            child: _buildPostList(context, feedViewModel, feedUser),
           ),
         ),
       ],
     );
   }
-}
 
-Widget _buildUserHeader(
-  BuildContext context,
-  FeedViewModel feedViewModel,
-  UserInfo feedUser,
-  int loginUserId,
-) {
-  final isMyFeed = feedUser.id == loginUserId;
+  bool _needsInitialization(FeedViewModel viewModel, int loginUserId) {
+    return (!viewModel.isInitialized || viewModel.feedUser?.id != userId) &&
+        loginUserId != 0;
+  }
 
-  if (!isMyFeed && !feedViewModel.isStatusChecked) {
+  void _initializeFeed(
+    BuildContext context,
+    FeedViewModel viewModel,
+    int loginUserId,
+  ) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (feedViewModel.isStatusChecked) return;
-
-      feedViewModel.checkUserStatus(loginUserId, feedUser.id);
-      context.read<FriendViewModel>().checkIfFriend(loginUserId, feedUser.id);
+      if (viewModel.isLoading ||
+          (viewModel.isInitialized && viewModel.feedUser?.id == userId)) {
+        return;
+      }
+      viewModel.initializeFeed(userId, loginUserId);
     });
   }
 
-  return Consumer2<FeedViewModel, FriendViewModel>(
-    builder: (context, feedViewModel, friendViewModel, child) {
-      final isBlocked = feedViewModel.isBlocked;
-      final isFriend = friendViewModel.isFriend;
-      final isRequested = feedViewModel.isRequested;
-      final feedCount = feedViewModel.posts.length;
+  Widget _buildLoadingView() {
+    return Container(
+      color: AppColors.opicBackground,
+      child: Center(
+        child: CircularProgressIndicator(color: AppColors.opicBlue),
+      ),
+    );
+  }
 
-      return Container(
-        decoration: BoxDecoration(
-          color: AppColors.opicWhite,
-          border: Border(
-            top: BorderSide(color: AppColors.opicSoftBlue, width: 0.5),
-            bottom: BorderSide(color: AppColors.opicSoftBlue, width: 0.5),
-          ),
-        ),
-        width: double.maxFinite,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // 닉네임
-                  Row(
-                    children: [
-                      isMyFeed
-                          ? SizedBox(width: 5.0)
-                          : IconButton(
-                              icon: Icon(
-                                Icons.arrow_back_rounded,
-                                color: AppColors.opicBlack,
-                              ),
-                              onPressed: () {
-                                context.pop();
-                              },
-                              splashColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                            ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6.0),
-                        child: Text(
-                          feedUser.nickname,
-                          style: TextStyle(
-                            decoration: TextDecoration.none,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 23,
-                            color: AppColors.opicBlack,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  // 내 피드가 아닐 때만 버튼 표시
-                  if (!isMyFeed)
-                    Row(
-                      spacing: 5,
-                      children: [
-                        // 친구 추가 버튼 (친구가 아니고, 요청 중도 아니고, 차단 안 되어있을 때)
-                        if (!isFriend && !isRequested && !isBlocked)
-                          GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                barrierColor: Colors.black.withOpacity(0.6),
-                                builder: (context) => YesOrClosePopUp(
-                                  title: "친구가 되시겠어요?",
-                                  text: "상대방이 친구 요청을 수락하면, 친구가 되어요",
-                                  confirmText: "친구 요청",
-                                  onConfirm: () async {
-                                    context.pop();
-                                    await friendViewModel.makeARequest(
-                                      loginUserId,
-                                      feedUser.id,
-                                    );
-                                    // 상태 다시 체크
-                                    await Future.wait([
-                                      feedViewModel.checkIfRequested(
-                                        loginUserId,
-                                        feedUser.id,
-                                      ),
-                                      friendViewModel.checkIfFriend(
-                                        loginUserId,
-                                        feedUser.id,
-                                      ),
-                                    ]);
-                                    showToast("친구 요청을 보냈어요 💌");
-                                  },
-                                  onCancel: () {
-                                    context.pop();
-                                  },
-                                ),
-                              );
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.opicBlue,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.person_add_alt_rounded,
-                                    color: AppColors.opicWhite,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    "친구 요청",
-                                    style: TextStyle(
-                                      decoration: TextDecoration.none,
-                                      color: AppColors.opicWhite,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        // 친구를 이미 요청하여 수락 대기 중일 때 -> 친구 요청 취소 버튼
-                        if (isRequested && !isFriend && !isBlocked)
-                          GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                barrierColor: Colors.black.withOpacity(0.6),
-                                builder: (context) => YesOrClosePopUp(
-                                  title: "친구 요청을 취소하시겠어요?",
-                                  text: "상대방이 수락하기 전인 친구 요청을 삭제할 수 있어요",
-                                  confirmText: "요청 취소",
-                                  onConfirm: () async {
-                                    context.pop();
-                                    await feedViewModel.deleteARequest(
-                                      loginUserId,
-                                      feedUser.id,
-                                    );
-                                    showToast("친구 요청을 취소했어요");
-                                  },
-                                  onCancel: () {
-                                    context.pop();
-                                  },
-                                ),
-                              );
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.opicWarmGrey,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.schedule_rounded,
-                                    color: AppColors.opicBlack,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    "요청 취소",
-                                    style: TextStyle(
-                                      color: AppColors.opicBlack,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        // 차단 버튼 (차단 안 되어있을 때)
-                        if (!isBlocked)
-                          GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                barrierColor: Colors.black.withOpacity(0.6),
-                                builder: (context) => YesOrClosePopUp(
-                                  title: "차단하시겠어요?",
-                                  text: "앞으로 해당 사용자의 게시물이 보이지 않아요",
-                                  confirmText: "차단하기",
-                                  onConfirm: () async {
-                                    context.pop();
-                                    await feedViewModel.blockUser(
-                                      loginUserId,
-                                      feedUser.id,
-                                    );
-                                    showToast("사용자를 차단했어요");
-                                  },
-                                  onCancel: () {
-                                    context.pop();
-                                  },
-                                ),
-                              );
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.opicRed,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.block_rounded,
-                                    color: AppColors.opicWhite,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    "차단",
-                                    style: TextStyle(
-                                      decoration: TextDecoration.none,
-                                      color: AppColors.opicWhite,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        // 차단 해제 버튼 (내가 상대를 차단했을 때)
-                        if (isBlocked)
-                          GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                barrierColor: Colors.black.withOpacity(0.6),
-                                builder: (context) => YesOrClosePopUp(
-                                  title: "차단을 해제하시겠어요?",
-                                  text: "해당 사용자의 게시물이 다시 보여요",
-                                  confirmText: "차단해제",
-                                  onConfirm: () async {
-                                    context.pop();
-                                    await feedViewModel.unblockUser(
-                                      loginUserId,
-                                      feedUser.id,
-                                    );
-                                    // 상태 다시 체크
-                                    await feedViewModel.checkIfBlocked(
-                                      loginUserId,
-                                      feedUser.id,
-                                    );
-                                    showToast("사용자를 차단해제했어요");
-                                  },
-                                  onCancel: () {
-                                    context.pop();
-                                  },
-                                ),
-                              );
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.opicCoolGrey,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.check_circle_outline_rounded,
-                                    color: AppColors.opicWhite,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    "차단해제",
-                                    style: TextStyle(
-                                      decoration: TextDecoration.none,
-                                      color: AppColors.opicWhite,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                ],
-              ),
-              SizedBox(height: 5),
-              Text(
-                "게시물 $feedCount",
-                style: TextStyle(
-                  decoration: TextDecoration.none,
-                  color: AppColors.opicSoftBlue,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-        ),
+  Widget _buildPostList(
+    BuildContext context,
+    FeedViewModel feedViewModel,
+    UserInfo feedUser,
+  ) {
+    final postsCount = feedViewModel.posts.length;
+    final isBlocked = feedViewModel.relationState.isBlocked;
+    final isBlockedMe = feedViewModel.relationState.isBlockedMe;
+
+    // 차단 상태 확인
+    if (isBlocked) {
+      return FeedEmptyState(
+        message: "차단한 유저의 게시물은 보이지 않아요",
+        onRefresh: () => feedViewModel.refresh(feedUser.id),
       );
-    },
-  );
-}
+    }
 
-Widget _postList(
-  BuildContext context,
-  FeedViewModel feedViewModel,
-  UserInfo feedUser,
-) {
-  final postsCount = feedViewModel.posts.length;
-  final posts = feedViewModel.posts;
-  final isBlocked = feedViewModel.isBlocked;
-  final isBlockedMe = feedViewModel.isBlockedMe;
+    if (isBlockedMe) {
+      return FeedEmptyState(
+        message: "접근 권한이 주어지지 않았어요 😢",
+        onRefresh: () => feedViewModel.refresh(feedUser.id),
+      );
+    }
 
-  // 내가 차단한 상대의 피드
-  if (isBlocked) {
-    return RefreshIndicator(
+    if (postsCount == 0) {
+      return FeedEmptyState(
+        message: "아직 작성한 게시물이 없어요",
+        onRefresh: () => feedViewModel.refresh(feedUser.id),
+      );
+    }
+
+    return FeedPostGrid(
+      posts: feedViewModel.posts,
+      scrollController: feedViewModel.scrollController,
       onRefresh: () => feedViewModel.refresh(feedUser.id),
-      child: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
-        child: Container(
-          color: AppColors.opicBackground,
-          height: MediaQuery.of(context).size.height * 0.6,
-          child: Center(
-            child: Text(
-              "차단한 유저의 게시물은 보이지 않아요",
-              style: TextStyle(fontSize: 16, color: AppColors.opicBlack),
-            ),
-          ),
-        ),
-      ),
     );
   }
-
-  // 나를 차단한 상대의 피드
-  if (isBlockedMe) {
-    return RefreshIndicator(
-      onRefresh: () => feedViewModel.refresh(feedUser.id),
-      child: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
-        child: Container(
-          color: AppColors.opicBackground,
-          height: MediaQuery.of(context).size.height * 0.6,
-          child: Center(
-            child: Text(
-              "접근 권한이 주어지지 않았어요 😢",
-              style: TextStyle(fontSize: 16, color: AppColors.opicBlack),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // 작성한 게시물이 없을 경우
-  if (postsCount == 0) {
-    return RefreshIndicator(
-      onRefresh: () => feedViewModel.refresh(feedUser.id),
-      child: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
-        child: Container(
-          color: AppColors.opicBackground,
-          height: MediaQuery.of(context).size.height * 0.6,
-          child: Center(
-            child: Text(
-              "아직 작성한 게시물이 없어요",
-              style: TextStyle(fontSize: 16, color: AppColors.opicBlack),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  return RefreshIndicator(
-    onRefresh: () => feedViewModel.refresh(feedUser.id),
-    child: GridView.builder(
-      physics: AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(6.0),
-      controller: feedViewModel.scrollController,
-      itemCount: postsCount,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 6.0,
-        mainAxisSpacing: 6.0,
-        childAspectRatio: 1.0,
-      ),
-      itemBuilder: (context, index) {
-        final post = posts[index];
-        return GestureDetector(
-          onTap: () {
-            context.push('/post_detail_page/${post.id}');
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              post.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: AppColors.opicWarmGrey,
-                child: Icon(
-                  Icons.image_not_supported,
-                  color: AppColors.opicCoolGrey,
-                ),
-              ),
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  color: AppColors.opicWarmGrey,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.opicBlue,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
-    ),
-  );
 }
