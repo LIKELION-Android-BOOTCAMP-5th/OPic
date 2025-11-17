@@ -109,9 +109,9 @@ class FriendInfoRow extends StatelessWidget {
                           title: "친구를 삭제하시겠어요?",
                           text: "삭제 시, 상대방과의 친구 관계가 끊어집니다",
                           confirmText: "삭제하기",
-                          onConfirm: () {
+                          onConfirm: () async {
                             context.pop();
-                            context.read<FriendViewModel>().deleteFriend(
+                            await context.read<FriendViewModel>().deleteFriend(
                               friendId,
                               userId,
                             );

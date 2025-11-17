@@ -67,9 +67,9 @@ class BlockInfoRow extends StatelessWidget {
                       title: "차단을 해제하시겠어요?",
                       text: "선택한 사용자의 게시물이 다시 보여요",
                       confirmText: "차단 해제",
-                      onConfirm: () {
+                      onConfirm: () async {
                         context.pop();
-                        context.read<FriendViewModel>().unblockUser(
+                        await context.read<FriendViewModel>().unblockUser(
                           userId,
                           blockUserId,
                         );
