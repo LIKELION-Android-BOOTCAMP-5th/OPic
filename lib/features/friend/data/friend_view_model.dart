@@ -13,53 +13,64 @@ class FriendViewModel extends ChangeNotifier {
 
   int currentPage = 1;
   ScrollController scrollController = ScrollController();
+  bool shouldShowScrollUpButton = false;
 
+  // 친구 목록
   List<Friend> _friends = [];
   List<Friend> get friends => _friends;
 
+  // 친구 요청 목록
   List<FriendRequest> _friendRequests = [];
   List<FriendRequest> get friendRequests => _friendRequests;
 
+  // 차단 유저 목록
   List<BlockUser> _blockUsers = [];
   List<BlockUser> get blockUsers => _blockUsers;
 
+  // 사용자 정보 (캐시)
   Map<int, UserInfo> _userInfoCache = {};
   Map<int, UserInfo> get userInfoCache => _userInfoCache;
 
-  bool shouldShowScrollUpButton = false;
-
+  // 특정 사용자 정보
   UserInfo? _certainUser;
   UserInfo? get certainUser => _certainUser;
 
+  // 로그인 유저 아이디
   int? _loginUserId;
   int? get loginUserId => _loginUserId;
 
+  // 해당 닉네임 사용자 존재 여부
   bool _isExist = false;
   bool get isExist => _isExist;
 
+  // 친구 여부
   bool _isFriend = false;
   bool get isFriend => _isFriend;
 
+  // 친구 <-> 친구요청 <-> 차단 화면 변경 탭 번호
   int _tabNumber = 0;
   int get tabNumber => _tabNumber;
 
+  // 초기설정 여부
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
 
+  // 로딩중
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  // AuthManager 상태 구독
   FriendViewModel() {
     AuthManager.shared.addListener(_onAuthChanged);
     _checkCurrentAuth();
     _initializeScrollListener();
   }
 
+  // 로그인 정보 변경 확인
   void _onAuthChanged() {
     _checkCurrentAuth();
   }
 
+  // 로그인 확인
   void _checkCurrentAuth() {
     final userId = AuthManager.shared.userInfo?.id;
 
@@ -77,10 +88,9 @@ class FriendViewModel extends ChangeNotifier {
     } else if (userId != null && _isInitialized) {
       debugPrint("초기화 완료");
     }
-
-    debugPrint("userId: $userId");
   }
 
+  //스크롤 관련
   void _initializeScrollListener() {
     Timer? debounce;
 
@@ -111,11 +121,21 @@ class FriendViewModel extends ChangeNotifier {
     });
   }
 
+  void moveScrollUp() {
+    scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.fastOutSlowIn,
+    );
+  }
+
+  // 친구 <-> 친구 요청 <-> 차단 탭 변경
   void changeTab(int tab) {
     _tabNumber = tab;
     notifyListeners();
   }
 
+  // 초기 설정
   Future<void> initialize(int loginUserId) async {
     _loginUserId = loginUserId;
     currentPage = 1;
@@ -127,14 +147,7 @@ class FriendViewModel extends ChangeNotifier {
     await _loadAllUserInfos();
   }
 
-  void moveScrollUp() {
-    scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.fastOutSlowIn,
-    );
-  }
-
+  // 친구, 친구요청, 차단 정보 한번에 불러오기
   Future<void> _loadAllUserInfos() async {
     final allUserIds = <int>{};
 
@@ -168,6 +181,7 @@ class FriendViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 아이디로 유저 정보 얻기
   Future<UserInfo?> getUserInfo(int userId) async {
     if (_userInfoCache.containsKey(userId)) {
       return _userInfoCache[userId];
@@ -185,18 +199,7 @@ class FriendViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> fetchFriends(int startIndex, int loginUserId) async {
-    _isLoading = true;
-    notifyListeners();
-
-    _friends = await _repository.fetchFriends(startIndex, loginUserId);
-
-    await _loadAllUserInfos();
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
+  // 새로고침
   Future<void> refresh(int loginUserId) async {
     _isLoading = true;
     notifyListeners();
@@ -204,14 +207,17 @@ class FriendViewModel extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 1000));
     currentPage = 1;
 
-    _friends = await _repository.fetchFriends(currentPage, loginUserId);
+    _friends = await _repository.fetchFriends(
+      currentPage: currentPage,
+      loginId: loginUserId,
+    );
     _friendRequests = await _repository.fetchFriendRequests(
-      currentPage,
-      loginUserId,
+      currentPage: currentPage,
+      loginId: loginUserId,
     );
     _blockUsers = await _repository.fetchBlockedUserWithPager(
-      currentPage,
-      loginUserId,
+      currentPage: currentPage,
+      loginId: loginUserId,
     );
 
     await _loadAllUserInfos();
@@ -220,14 +226,31 @@ class FriendViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 친구 목록 불러오기
+  Future<void> fetchFriends(int startIndex, int loginUserId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    _friends = await _repository.fetchFriends(
+      currentPage: startIndex,
+      loginId: loginUserId,
+    );
+
+    await _loadAllUserInfos();
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  // 친구목록 불러오기(다음 페이지)
   Future<void> fetchMoreFriends(int loginUser) async {
     if (_isLoading) return;
 
     _isLoading = true;
     currentPage += 1;
     final fetchedFriends = await _repository.fetchFriends(
-      currentPage,
-      loginUser,
+      currentPage: currentPage,
+      loginId: loginUser,
     );
 
     if (fetchedFriends.isNotEmpty) {
@@ -240,19 +263,21 @@ class FriendViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 친구 삭제하기
   Future<void> deleteFriend(int friendId, int loginUserId) async {
     await _repository.deleteFriend(friendId);
     await fetchFriends(currentPage, loginUserId);
     notifyListeners();
   }
 
+  // 친구 요청 불러오기
   Future<void> fetchFriendRequests(int startIndex, int loginUserId) async {
     _isLoading = true;
     notifyListeners();
 
     _friendRequests = await _repository.fetchFriendRequests(
-      startIndex,
-      loginUserId,
+      currentPage: startIndex,
+      loginId: loginUserId,
     );
 
     await _loadAllUserInfos();
@@ -261,14 +286,15 @@ class FriendViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 친구 요청 불러오기 (다음 페이지)
   Future<void> fetchMoreFriendRequests(int loginUserId) async {
     if (_isLoading) return;
 
     _isLoading = true;
     currentPage += 1;
     final fetchedFriendRequests = await _repository.fetchFriendRequests(
-      currentPage,
-      loginUserId,
+      currentPage: currentPage,
+      loginId: loginUserId,
     );
 
     if (fetchedFriendRequests.isNotEmpty) {
@@ -281,42 +307,44 @@ class FriendViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 유저 아이디로 유저 정보 불러오기
   Future<void> fetchAUser(int userId) async {
     _certainUser = await _repository.fetchAUser(userId);
     notifyListeners();
   }
 
-  Future<void> checkIfExist(String nickname) async {
-    _isExist = await _repository.checkIfExist(nickname);
-    notifyListeners();
-  }
-
+  // 닉네임으로 유저 정보 불러오기
   Future<void> fetchAUserByName(String nickname) async {
     _certainUser = await _repository.fetchAUserByName(nickname);
     notifyListeners();
   }
 
+  // 해당 닉네임을 사용하는 유저가 있는지 여부 확인
+  Future<void> checkIfExist(String nickname) async {
+    _isExist = await _repository.checkIfExist(nickname);
+    notifyListeners();
+  }
+
+  // 친구 관계 확인하기
   Future<bool> checkIfFriend(int loginUserId, int friendUserId) async {
     _isFriend = await _repository.checkIfFriend(loginUserId, friendUserId);
     notifyListeners();
     return _isFriend;
   }
 
+  // 친구 요청 보내기
   Future<void> makeARequest(int loginUserId, int targetUserId) async {
     await _repository.makeARequest(loginUserId, targetUserId);
     notifyListeners();
   }
 
-  Future<void> deleteARequest(int loginUserId, int targetUserId) async {
-    await _repository.deleteARequest(loginUserId, targetUserId);
-    notifyListeners();
-  }
-
+  // 친구 요청 응답하기(거절)
   Future<void> answerARequest(int requestId, int loginUserId) async {
     await _repository.answerARequest(requestId);
     await fetchFriendRequests(currentPage, loginUserId);
   }
 
+  // 친구 요청 응답하기(수락)
   Future<void> acceptARequest(
     int requestId,
     int loginUserId,
@@ -327,18 +355,14 @@ class FriendViewModel extends ChangeNotifier {
     await fetchFriendRequests(currentPage, loginUserId);
   }
 
-  Future<void> editNickname(int loginUserId, String nickname) async {
-    await _repository.editNickname(loginUserId, nickname);
-    await fetchAUser(loginUserId);
-  }
-
+  // 차단 유저 목록 불러오기
   Future<void> fetchBlockUsersWithPager(
     int currentPage,
     int loginUserId,
   ) async {
     _blockUsers = await _repository.fetchBlockedUserWithPager(
-      currentPage,
-      loginUserId,
+      currentPage: currentPage,
+      loginId: loginUserId,
     );
 
     await _loadAllUserInfos();
@@ -346,14 +370,15 @@ class FriendViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 차단 유저 목록 불러오기(다음페이지)
   Future<void> fetchMoreBlockUsersWithPager(int loginUserId) async {
     if (_isLoading) return;
 
     _isLoading = true;
     currentPage += 1;
     final fetchedBlockUsers = await _repository.fetchBlockedUserWithPager(
-      currentPage,
-      loginUserId,
+      currentPage: currentPage,
+      loginId: loginUserId,
     );
 
     if (fetchedBlockUsers.isNotEmpty) {
@@ -366,11 +391,13 @@ class FriendViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 차단 해제하기
   Future<void> unblockUser(int loginUserId, int userId) async {
     await _repository.unblockUser(loginUserId, userId);
     notifyListeners();
   }
 
+  // API 중복 호출 방지
   @override
   void dispose() {
     AuthManager.shared.removeListener(_onAuthChanged);

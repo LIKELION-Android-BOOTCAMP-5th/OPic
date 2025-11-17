@@ -8,32 +8,36 @@ import 'alarm_repository.dart';
 class AlarmViewModel extends ChangeNotifier {
   final AlarmRepository _repository = AlarmRepository();
 
-  int currentPage = 1;
-  ScrollController scrollController = ScrollController();
-
-  List<Alarm> _alarms = [];
-  List<Alarm> get alarms => _alarms;
-
-  bool shouldShowScrollUpButton = false;
-
-  Alarm? _certainAlarm;
-  Alarm? get certainAlarm => _certainAlarm;
-
-  int? _loginUserId;
-  int? get loginUserId => _loginUserId;
-
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
-
-  int _unreadCount = 0;
-  int get unreadCount => _unreadCount;
-
-  bool get hasUnreadAlarm => _unreadCount > 0;
-
   AlarmViewModel() {
     _initializeScrollListener();
   }
 
+  int currentPage = 1;
+  ScrollController scrollController = ScrollController();
+  bool shouldShowScrollUpButton = false;
+
+  // 알람 리스트
+  List<Alarm> _alarms = [];
+  List<Alarm> get alarms => _alarms;
+
+  // 특정 알람
+  Alarm? _certainAlarm;
+  Alarm? get certainAlarm => _certainAlarm;
+
+  // 로그인한 유저 정보
+  int? _loginUserId;
+  int? get loginUserId => _loginUserId;
+
+  // 불러오는 중 여부
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  // 안 읽은 알람 수
+  int _unreadCount = 0;
+  int get unreadCount => _unreadCount;
+  bool get hasUnreadAlarm => _unreadCount > 0;
+
+  // 스크롤 관련
   void _initializeScrollListener() {
     Timer? debounce;
 
@@ -75,45 +79,55 @@ class AlarmViewModel extends ChangeNotifier {
     );
   }
 
+  // 안읽은 알람 갯수 확인
   void _updateUnreadCount() {
     _unreadCount = _alarms.where((alarm) => !alarm.isChecked).length;
   }
 
-  // 리포지토리에서 데이터 가져오는데 이제 시작하자마자 가져오기
+  // 새로고침
+  Future<void> refresh(int loginUserId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    currentPage = 1;
+    _alarms = await _repository.fetchAlarms(
+      currentPage: currentPage,
+      loginId: loginUserId,
+    );
+    _updateUnreadCount();
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  // 알람리스트 가져오기 -> 시작하자마자 가져오기
   Future<void> fetchAlarms(int startIndex, int loginUserId) async {
     _isLoading = true;
     _loginUserId = loginUserId;
     currentPage = startIndex;
     notifyListeners();
 
-    _alarms = await _repository.fetchAlarms(startIndex, loginUserId);
-    _updateUnreadCount();
-    _isLoading = false;
-
-    //구독자(?)에게 알림보내기
-    notifyListeners();
-    debugPrint("FriendViewModel _initFriends 호출됨");
-  }
-
-  Future<void> refresh(int loginUserId) async {
-    // isLoading을 true로 설정 (리스트는 비우지 않음)
-    _isLoading = true;
-    notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 500));
-    currentPage = 1;
-    _alarms = await _repository.fetchAlarms(currentPage, loginUserId);
+    _alarms = await _repository.fetchAlarms(
+      currentPage: startIndex,
+      loginId: loginUserId,
+    );
     _updateUnreadCount();
 
     _isLoading = false;
     notifyListeners();
   }
 
+  // 알람 불러오기(다음페이지)
   Future<void> fetchMoreAlarms(int loginUser) async {
     if (_isLoading) return;
 
     _isLoading = true;
     currentPage += 1;
-    final fetchedAlarms = await _repository.fetchAlarms(currentPage, loginUser);
+    final fetchedAlarms = await _repository.fetchAlarms(
+      currentPage: currentPage,
+      loginId: loginUser,
+    );
 
     if (fetchedAlarms.isNotEmpty) {
       _alarms.addAll(fetchedAlarms);
@@ -121,20 +135,23 @@ class AlarmViewModel extends ChangeNotifier {
     } else {
       currentPage -= 1;
     }
+
     _isLoading = false;
     notifyListeners();
-    debugPrint("AlarmViewmodel fetchedAlarms 호출됨");
   }
 
+  // 특정 알림의 정보 가져오기
   Future<void> fetchAnAlarm(int alarmId) async {
     _certainAlarm = await _repository.fetchAnAlarm(alarmId);
   }
 
+  // 알림 읽음 처리
   Future<void> checkAlarm(int loginUserId, int alarmId) async {
     await _repository.checkAlarm(alarmId);
     await refresh(loginUserId);
   }
 
+  // API 중복 호출 방지
   @override
   void dispose() {
     scrollController.dispose();
