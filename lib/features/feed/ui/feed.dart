@@ -207,7 +207,7 @@ Widget _buildUserHeader(
                                   confirmText: "요청 취소",
                                   onConfirm: () async {
                                     context.pop();
-                                    await friendViewModel.deleteARequest(
+                                    await feedViewModel.deleteARequest(
                                       loginUserId,
                                       feedUser.id,
                                     );
