@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:opicproject/core/models/post_model.dart';
 import 'package:opicproject/core/models/user_model.dart';
 
-import 'feed_repository.dart';
+import '../data/feed_repository.dart';
 
 class FeedViewModel extends ChangeNotifier {
   final FeedRepository _repository = FeedRepository();
