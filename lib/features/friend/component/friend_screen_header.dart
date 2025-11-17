@@ -1,0 +1,101 @@
+import 'package:flutter/material.dart';
+import 'package:opicproject/core/app_colors.dart';
+import 'package:opicproject/features/friend/component/add_friend_pop_up.dart';
+import 'package:opicproject/features/friend/component/friend_tab_button.dart';
+import 'package:opicproject/features/friend/data/friend_tab.dart';
+import 'package:opicproject/features/friend/viewmodel/friend_view_model.dart';
+
+class FriendScreenHeader extends StatelessWidget {
+  final FriendViewModel viewModel;
+
+  const FriendScreenHeader({super.key, required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.opicWhite,
+        border: Border(
+          top: BorderSide(color: AppColors.opicSoftBlue, width: 0.5),
+          bottom: BorderSide(color: AppColors.opicSoftBlue, width: 0.5),
+        ),
+      ),
+      width: double.maxFinite,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+        child: Column(children: [_buildTitleRow(context), _buildTabRow()]),
+      ),
+    );
+  }
+
+  Widget _buildTitleRow(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Text(
+            "친구",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15.0,
+              color: AppColors.opicBlack,
+            ),
+          ),
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.person_add_alt_rounded,
+            color: AppColors.opicBlack,
+            size: 20.0,
+          ),
+          onPressed: () => _showAddFriendDialog(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: FriendTabButton(
+            label: FriendTab.friends.label,
+            count: viewModel.friends.length,
+            isSelected: viewModel.tabNumber == FriendTab.friends.index,
+            onTap: () => viewModel.changeTab(FriendTab.friends.index),
+            icon: FriendTab.friends.icon,
+          ),
+        ),
+        const SizedBox(width: 6.0),
+        Expanded(
+          child: FriendTabButton(
+            label: FriendTab.requests.label,
+            count: viewModel.friendRequests.length,
+            isSelected: viewModel.tabNumber == FriendTab.requests.index,
+            onTap: () => viewModel.changeTab(FriendTab.requests.index),
+            icon: FriendTab.requests.icon,
+          ),
+        ),
+        const SizedBox(width: 6.0),
+        Expanded(
+          child: FriendTabButton(
+            label: FriendTab.blocked.label,
+            count: viewModel.blockUsers.length,
+            isSelected: viewModel.tabNumber == FriendTab.blocked.index,
+            onTap: () => viewModel.changeTab(FriendTab.blocked.index),
+            icon: FriendTab.blocked.icon,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAddFriendDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (context) => const AddFriendPopUp(),
+    );
+  }
+}
