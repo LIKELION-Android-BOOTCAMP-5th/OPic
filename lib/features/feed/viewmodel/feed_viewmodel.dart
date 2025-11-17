@@ -100,6 +100,8 @@ class FeedViewModel extends ChangeNotifier {
 
   // 피드 정보 초기설정 (다른 유저 피드로 이동할 때 이전 유저 정보 남지 않게)
   Future<void> initializeFeed(int feedUserId, int loginUserId) async {
+    if (_isLoading) return;
+
     if (_currentFeedUserId == feedUserId && _isInitialized) {
       return;
     }

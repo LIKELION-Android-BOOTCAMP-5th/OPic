@@ -31,7 +31,9 @@ class _AlarmListScreenState extends State<_AlarmListScreen> {
       final authManager = context.read<AuthManager>();
       final loginUserId = authManager.userInfo?.id ?? 0;
 
-      if (loginUserId != 0) {
+      if (loginUserId != 0 &&
+          viewModel.alarms.isEmpty &&
+          !viewModel.isLoading) {
         viewModel.fetchAlarms(1, loginUserId);
       }
     });

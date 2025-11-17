@@ -60,9 +60,13 @@ class FriendViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   FriendViewModel() {
-    AuthManager.shared.addListener(_onAuthChanged);
-    _checkCurrentAuth();
     _initializeScrollListener();
+    AuthManager.shared.addListener(_onAuthChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isInitialized) {
+        _checkCurrentAuth();
+      }
+    });
   }
 
   // 로그인 정보 변경 확인

@@ -15,6 +15,7 @@ class AddFriendPopUp extends StatefulWidget {
 
 class _AddFriendPopUpState extends State<AddFriendPopUp> {
   final TextEditingController _nicknameController = TextEditingController();
+  bool _isProcessing = false; // 중복 호출 방지
 
   @override
   void dispose() {
@@ -42,7 +43,7 @@ class _AddFriendPopUpState extends State<AddFriendPopUp> {
             ),
             SizedBox(height: 24),
             TextField(
-              controller: _nicknameController, // controller 추가!
+              controller: _nicknameController,
               obscureText: false,
               decoration: InputDecoration(
                 filled: true,
@@ -76,51 +77,66 @@ class _AddFriendPopUpState extends State<AddFriendPopUp> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
+                      // 중복 호출 방지
+                      if (_isProcessing) return;
+
                       final nickname = _nicknameController.text.trim();
                       if (nickname.isEmpty) {
                         showToast("닉네임을 입력해주세요");
                         return;
                       }
 
-                      final viewModel = context.read<FriendViewModel>();
-                      final loginUserId = AuthManager.shared.userInfo?.id ?? 0;
+                      setState(() => _isProcessing = true);
 
-                      // 1. 유저 존재 여부 확인
-                      await viewModel.checkIfExist(nickname);
+                      try {
+                        final viewModel = context.read<FriendViewModel>();
+                        final loginUserId =
+                            AuthManager.shared.userInfo?.id ?? 0;
 
-                      if (!viewModel.isExist) {
-                        showToast("존재하지 않는 사용자예요");
-                        return;
+                        // 1. 유저 존재 여부 확인
+                        await viewModel.checkIfExist(nickname);
+
+                        if (!viewModel.isExist) {
+                          showToast("존재하지 않는 사용자예요");
+                          return;
+                        }
+
+                        // 2. 해당 유저 정보 가져오기
+                        await viewModel.fetchAUserByName(nickname);
+
+                        if (viewModel.certainUser == null) {
+                          showToast("사용자 정보를 불러올 수 없어요");
+                          return;
+                        }
+
+                        final targetUserId = viewModel.certainUser?.id ?? 0;
+
+                        // 3. 자기 자신인지 확인
+                        if (targetUserId == loginUserId) {
+                          showToast("자기 자신에게는 친구 요청을 보낼 수 없어요");
+                          return;
+                        }
+
+                        // 4. 이미 친구인지 확인
+                        await viewModel.checkIfFriend(
+                          loginUserId,
+                          targetUserId,
+                        );
+
+                        if (viewModel.isFriend) {
+                          showToast("이미 친구인 사용자예요");
+                          return;
+                        }
+
+                        // 5. 친구 요청 보내기
+                        await viewModel.makeARequest(loginUserId, targetUserId);
+                        context.pop();
+                        showToast("친구 요청을 보냈어요 💌");
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isProcessing = false);
+                        }
                       }
-
-                      // 2. 해당 유저 정보 가져오기
-                      await viewModel.fetchAUserByName(nickname);
-
-                      if (viewModel.certainUser == null) {
-                        showToast("사용자 정보를 불러올 수 없어요");
-                        return;
-                      }
-
-                      final targetUserId = viewModel.certainUser?.id ?? 0;
-
-                      // 3. 자기 자신인지 확인
-                      if (targetUserId == loginUserId) {
-                        showToast("자기 자신에게는 친구 요청을 보낼 수 없어요");
-                        return;
-                      }
-
-                      // 4. 이미 친구인지 확인
-                      await viewModel.checkIfFriend(loginUserId, targetUserId);
-
-                      if (viewModel.isFriend) {
-                        showToast("이미 친구인 사용자예요");
-                        return;
-                      }
-
-                      // 5. 친구 요청 보내기
-                      await viewModel.makeARequest(loginUserId, targetUserId);
-                      context.pop();
-                      showToast("친구 요청을 보냈어요 💌");
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.opicSoftBlue,
@@ -147,8 +163,8 @@ class _AddFriendPopUpState extends State<AddFriendPopUp> {
                       context.pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffe8e8dc),
-                      foregroundColor: Color(0xfffefefe),
+                      backgroundColor: AppColors.opicBackground,
+                      foregroundColor: AppColors.opicWhite,
                       padding: EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -159,7 +175,7 @@ class _AddFriendPopUpState extends State<AddFriendPopUp> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xff515151),
+                        color: AppColors.opicBlack,
                       ),
                     ),
                   ),
