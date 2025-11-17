@@ -14,10 +14,14 @@ class DioManager {
 
   DioManager._internal();
 
-  // ✅ Dio를 처음 사용할 때 자동으로 생성
-  Dio get _dio {
-    final supabase = Supabase.instance.client;
+  static const String _baseUrl =
+      'https://zoqxnpklgtcqkvskarls.supabase.co/rest/v1';
+  static const String _apiKey =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXhucGtsZ3RjcWt2c2thcmxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTk4NTYsImV4cCI6MjA3ODA3NTg1Nn0.qR8GmGNztCm44qqm7xJK4VvmI1RcIJybGKeMVBy8yaA';
 
+  late final _dio = _createDio();
+
+  Dio _createDio() {
     final dio = Dio(
       BaseOptions(
         baseUrl: 'https://zoqxnpklgtcqkvskarls.supabase.co/rest/v1',
@@ -29,22 +33,26 @@ class DioManager {
       ),
     );
 
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final session = supabase.auth.currentSession;
-
-          if (session != null) {
-            options.headers['Authorization'] = 'Bearer ${session.accessToken}';
-          }
-
-          return handler.next(options);
-        },
-      ),
-    );
+    dio.interceptors.add(_createAuthInterceptor());
 
     return dio;
   }
+
+  InterceptorsWrapper _createAuthInterceptor() {
+    return InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final session = Supabase.instance.client.auth.currentSession;
+
+        if (session != null) {
+          options.headers['Authorization'] = 'Bearer ${session.accessToken}';
+        }
+
+        handler.next(options);
+      },
+    );
+  }
+
+  Dio get dio => _dio;
 
   // 친구 목록 불러오기
   Future<List<Friend>> fetchFriends({
