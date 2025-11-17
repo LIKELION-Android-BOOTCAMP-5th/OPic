@@ -18,6 +18,8 @@ class FeedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final feedViewModel = context.watch<FeedViewModel>();
     final authManager = context.watch<AuthManager>();
+
+    // 현재 로그인한 유저의 아이디
     final loginUserId = authManager.userInfo?.id ?? 0;
 
     final needsInit =
@@ -34,6 +36,7 @@ class FeedScreen extends StatelessWidget {
       });
     }
 
+    // 피드 주인인 유저 정보
     final feedUser = feedViewModel.feedUser;
 
     if (feedUser == null || feedViewModel.isLoading) {
@@ -79,7 +82,6 @@ Widget _buildUserHeader(
   return Consumer2<FeedViewModel, FriendViewModel>(
     builder: (context, feedViewModel, friendViewModel, child) {
       final isBlocked = feedViewModel.isBlocked;
-      final isBlockedMe = feedViewModel.isBlockedMe;
       final isFriend = friendViewModel.isFriend;
       final isRequested = feedViewModel.isRequested;
       final feedCount = feedViewModel.posts.length;
@@ -137,7 +139,7 @@ Widget _buildUserHeader(
                     Row(
                       spacing: 5,
                       children: [
-                        // 친구 추가 버튼 (친구가 아니고, 요청중도 아니고, 차단 안 되어있을 때)
+                        // 친구 추가 버튼 (친구가 아니고, 요청 중도 아니고, 차단 안 되어있을 때)
                         if (!isFriend && !isRequested && !isBlocked)
                           GestureDetector(
                             onTap: () {
@@ -204,7 +206,7 @@ Widget _buildUserHeader(
                               ),
                             ),
                           ),
-                        // 수락 대기중 버튼 (요청중일 때)
+                        // 친구를 이미 요청하여 수락 대기 중일 때 -> 친구 요청 취소 버튼
                         if (isRequested && !isFriend && !isBlocked)
                           GestureDetector(
                             onTap: () {
@@ -315,7 +317,7 @@ Widget _buildUserHeader(
                               ),
                             ),
                           ),
-                        // 차단 해제 버튼 (차단되어있을 때)
+                        // 차단 해제 버튼 (내가 상대를 차단했을 때)
                         if (isBlocked)
                           GestureDetector(
                             onTap: () {
@@ -407,6 +409,7 @@ Widget _postList(
   final isBlocked = feedViewModel.isBlocked;
   final isBlockedMe = feedViewModel.isBlockedMe;
 
+  // 내가 차단한 상대의 피드
   if (isBlocked) {
     return RefreshIndicator(
       onRefresh: () => feedViewModel.refresh(feedUser.id),
@@ -426,6 +429,7 @@ Widget _postList(
     );
   }
 
+  // 나를 차단한 상대의 피드
   if (isBlockedMe) {
     return RefreshIndicator(
       onRefresh: () => feedViewModel.refresh(feedUser.id),
@@ -445,6 +449,7 @@ Widget _postList(
     );
   }
 
+  // 작성한 게시물이 없을 경우
   if (postsCount == 0) {
     return RefreshIndicator(
       onRefresh: () => feedViewModel.refresh(feedUser.id),
