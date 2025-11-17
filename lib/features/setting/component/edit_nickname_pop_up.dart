@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opicproject/core/app_colors.dart';
-import 'package:opicproject/features/setting/data/setting_view_model.dart';
+import 'package:opicproject/features/setting/viewmodel/setting_view_model.dart';
 import 'package:provider/provider.dart';
 
 class EditNicknamePopUp extends StatefulWidget {
@@ -263,7 +263,7 @@ class _EditNicknamePopUpState extends State<EditNicknamePopUp> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xff515151),
+                            color: AppColors.opicBlack,
                           ),
                         ),
                       ),

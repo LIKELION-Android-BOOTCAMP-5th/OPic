@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
-import 'package:opicproject/features/alarm/data/alarm_view_model.dart';
+import 'package:opicproject/features/alarm/viewmodel/alarm_view_model.dart';
 import 'package:provider/provider.dart';
 
+// 상단 앱바
 class OpicAppbar extends StatefulWidget implements PreferredSizeWidget {
   const OpicAppbar({super.key});
 
@@ -19,7 +20,7 @@ class _OpicAppbarState extends State<OpicAppbar> {
   @override
   void initState() {
     super.initState();
-    // 앱바가 생성될 때 알람 로드
+    // 앱바가 생성될 때 알림 리스트 로드 및 로그인 확인
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authManager = context.read<AuthManager>();
       if (authManager.userInfo != null) {
@@ -51,6 +52,7 @@ class _OpicAppbarState extends State<OpicAppbar> {
                   if (isLoggedIn)
                     Stack(
                       children: [
+                        // 알림 리스트 화면 열기
                         IconButton(
                           onPressed: () {
                             context.push('/alarm_list_page');
@@ -75,6 +77,7 @@ class _OpicAppbarState extends State<OpicAppbar> {
                           ),
                       ],
                     ),
+                  // 로그인/로그아웃 버튼 -> 로그인 여부에 따라 아이콘 다름
                   isLoggedIn
                       ? Container(
                           child: IconButton(
@@ -108,7 +111,7 @@ class _OpicAppbarState extends State<OpicAppbar> {
   }
 }
 
-/// 하단네비게이션
+// 하단네비게이션 바
 class OpicBottomNav extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;

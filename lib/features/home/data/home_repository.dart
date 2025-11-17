@@ -1,18 +1,18 @@
 import 'dart:io';
 
 import 'package:opicproject/core/manager/supabase_manager.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeRepository {
   static final HomeRepository shared = HomeRepository._internal();
   HomeRepository._internal();
+  final SupabaseClient _supabase = SupabaseManager.shared.supabase;
 
-  final supabase = SupabaseManager.shared.supabase;
-
-  //오늘의 주제
+  // 오늘의 주제 가져오기
   Future<Map<String, dynamic>?> fetchTodayTopic() async {
     final today = DateTime.now().toUtc().toString().substring(0, 10);
 
-    final result = await supabase
+    final result = await _supabase
         .from('topic')
         .select()
         .gte('uploaded_at', '$today 00:00:00')
@@ -34,12 +34,22 @@ class HomeRepository {
 
   //좋아요 가져오기
   Future<int> getLikeCounts(int postId) async {
-    return await SupabaseManager.shared.getLikeCount(postId);
+    final List<dynamic> data = await _supabase
+        .from("likes")
+        .select('id') // id만 가져오기
+        .eq('post_id', postId);
+
+    return data.length;
   }
 
-  //댓글 불러오기
+  // 특정 포스트의 댓글 갯수 가져오기
   Future<int> getCommentCounts(int postId) async {
-    return await SupabaseManager.shared.getCommentCount(postId);
+    final List<dynamic> data = await _supabase
+        .from("comments")
+        .select('id') // id만 가져오기
+        .eq('post_id', postId);
+
+    return data.length;
   }
 
   //이미지 수파베이스에

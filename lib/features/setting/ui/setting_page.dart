@@ -4,7 +4,7 @@ import 'package:opicproject/component/yes_or_close_pop_up.dart';
 import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/features/setting/component/edit_nickname_pop_up.dart';
-import 'package:opicproject/features/setting/data/setting_view_model.dart';
+import 'package:opicproject/features/setting/viewmodel/setting_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -45,7 +45,6 @@ class _SettingScreenState extends State<_SettingScreen> {
       body: SafeArea(
         child: Consumer<SettingViewModel>(
           builder: (context, viewModel, child) {
-            // ViewModel에서 직접 닉네임 가져오기
             final displayNickname =
                 viewModel.loginUser?.nickname ??
                 authManager.userInfo?.nickname ??

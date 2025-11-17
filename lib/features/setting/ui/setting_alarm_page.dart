@@ -1,11 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/core/models/alarm_setting_model.dart';
 import 'package:opicproject/features/setting/component/switch_row.dart';
-import 'package:opicproject/features/setting/data/setting_view_model.dart';
+import 'package:opicproject/features/setting/viewmodel/setting_view_model.dart';
 import 'package:provider/provider.dart';
 
 class SettingAlarmScreen extends StatefulWidget {
@@ -26,12 +27,21 @@ class _SettingAlarmScreenState extends State<SettingAlarmScreen> {
   bool _isInitialized = false;
   bool _isSaving = false;
 
+  Timer? _debounceTimer;
+
   @override
   void initState() {
     super.initState();
     _loadAlarmSettings();
   }
 
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  // 푸시 알림 설정 불러오기
   Future<void> _loadAlarmSettings() async {
     final authManager = context.read<AuthManager>();
     final loginUserId = authManager.userInfo?.id ?? 0;
@@ -57,15 +67,17 @@ class _SettingAlarmScreenState extends State<SettingAlarmScreen> {
     }
   }
 
+  // 푸시 알림 설정 저장하기
   Future<void> _saveAlarmSettings() async {
-    if (_isSaving) return; // 중복 저장 방지
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      if (_isSaving || !mounted) return;
 
-    final authManager = context.read<AuthManager>();
-    final loginUserId = authManager.userInfo?.id ?? 0;
+      final authManager = context.read<AuthManager>();
+      final loginUserId = authManager.userInfo?.id ?? 0;
 
-    setState(() => _isSaving = true);
+      setState(() => _isSaving = true);
 
-    try {
       final viewModel = context.read<SettingViewModel>();
 
       final newSetting = AlarmSetting(
@@ -84,15 +96,11 @@ class _SettingAlarmScreenState extends State<SettingAlarmScreen> {
         userId: loginUserId,
         newSetting: newSetting,
       );
-    } catch (e) {
-      if (mounted) {
-        Fluttertoast.showToast(msg: "알람 설정 저장 중 오류가 발생했습니다");
-      }
-    } finally {
+
       if (mounted) {
         setState(() => _isSaving = false);
       }
-    }
+    });
   }
 
   // 전체 알람 변경
@@ -290,7 +298,7 @@ class _SettingAlarmScreenState extends State<SettingAlarmScreen> {
               ],
             ),
 
-            if (_isSaving)
+            if (_isSaving || _debounceTimer?.isActive == true)
               Positioned(
                 top: 60,
                 right: 20,
@@ -315,7 +323,7 @@ class _SettingAlarmScreenState extends State<SettingAlarmScreen> {
                       ),
                       SizedBox(width: 8),
                       Text(
-                        '저장 중...',
+                        _isSaving ? '저장 중...' : '대기 중...',
                         style: TextStyle(
                           color: AppColors.opicWhite,
                           fontSize: 12,
@@ -347,11 +355,7 @@ class _SettingAlarmScreenState extends State<SettingAlarmScreen> {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
-        child: SwitchRow(
-          title: title,
-          value: value,
-          onChanged: _isSaving ? null : onChanged,
-        ),
+        child: SwitchRow(title: title, value: value, onChanged: onChanged),
       ),
     );
   }

@@ -2,12 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opicproject/core/app_colors.dart';
-import 'package:opicproject/features/alarm/data/alarm_view_model.dart';
 import 'package:opicproject/features/alarm/util/date_check.dart';
-import 'package:opicproject/features/friend/data/friend_view_model.dart';
+import 'package:opicproject/features/alarm/viewmodel/alarm_view_model.dart';
+import 'package:opicproject/features/friend/viewmodel/friend_view_model.dart';
 import 'package:opicproject/features/post/ui/post_detail_page.dart';
 import 'package:provider/provider.dart';
 
+/// 알림 리스트에 나열되는 각 알림 Row
 class AlarmRow extends StatelessWidget {
   final int alarmId;
   final int loginUserId;
@@ -18,7 +19,7 @@ class AlarmRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<AlarmViewModel>();
 
-    // ✅ alarms 리스트에서 해당 알람 찾기
+    // alarms 리스트에서 해당 알람 찾기
     final alarm = viewModel.alarms.where((a) => a.id == alarmId).firstOrNull;
 
     // 알람을 찾지 못한 경우

@@ -51,6 +51,7 @@ class PostViewModel extends ChangeNotifier {
   //좋아요 하트
   Future<void> toggleLike(int userId, int postId) async {
     await _repository.toggleLike(userId, postId);
+    likedPost = !likedPost;
     await fetchLikeCount(postId);
     notifyListeners();
   }
