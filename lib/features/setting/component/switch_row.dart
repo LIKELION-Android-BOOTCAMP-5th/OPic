@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opicproject/core/app_colors.dart';
 
 class SwitchRow extends StatelessWidget {
   final String title;
@@ -22,7 +23,7 @@ class SwitchRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(title, style: TextStyle(fontSize: 15, color: Color(0xff515151))),
+        Text(title, style: TextStyle(fontSize: 15, color: AppColors.opicBlack)),
         Transform.scale(
           scale: 0.8,
           child: Switch(

@@ -60,7 +60,6 @@ void main() async {
               OnboardingViewModel(locator<OnboardingService>()),
         ),
         ChangeNotifierProvider(create: (context) => AuthViewModel()),
-        //ChangeNotifierProvider(create: (context) => FeedViewModel()),
         ChangeNotifierProvider(create: (context) => FriendViewModel()),
         ChangeNotifierProvider(create: (context) => PostViewModel()),
         ChangeNotifierProvider(create: (context) => HomeViewModel()),

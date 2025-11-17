@@ -45,7 +45,6 @@ class _SettingScreenState extends State<_SettingScreen> {
       body: SafeArea(
         child: Consumer<SettingViewModel>(
           builder: (context, viewModel, child) {
-            // ViewModel에서 직접 닉네임 가져오기
             final displayNickname =
                 viewModel.loginUser?.nickname ??
                 authManager.userInfo?.nickname ??

@@ -41,6 +41,7 @@ class _SettingAlarmScreenState extends State<SettingAlarmScreen> {
     super.dispose();
   }
 
+  // 푸시 알림 설정 불러오기
   Future<void> _loadAlarmSettings() async {
     final authManager = context.read<AuthManager>();
     final loginUserId = authManager.userInfo?.id ?? 0;
@@ -66,6 +67,7 @@ class _SettingAlarmScreenState extends State<SettingAlarmScreen> {
     }
   }
 
+  // 푸시 알림 설정 저장하기
   Future<void> _saveAlarmSettings() async {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () async {

@@ -263,7 +263,7 @@ class _EditNicknamePopUpState extends State<EditNicknamePopUp> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xff515151),
+                            color: AppColors.opicBlack,
                           ),
                         ),
                       ),

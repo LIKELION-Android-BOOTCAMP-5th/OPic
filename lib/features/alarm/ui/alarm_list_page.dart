@@ -23,6 +23,7 @@ class _AlarmListScreen extends StatefulWidget {
 }
 
 class _AlarmListScreenState extends State<_AlarmListScreen> {
+  // 시작시 초기 설정
   @override
   void initState() {
     super.initState();
@@ -48,6 +49,7 @@ class _AlarmListScreenState extends State<_AlarmListScreen> {
           builder: (context, viewModel, authManager, child) {
             final loginUserId = authManager.userInfo?.id;
 
+            // 로그인이 안되어있는데 접근되었을 경우
             if (loginUserId == null) {
               return Container(
                 decoration: BoxDecoration(color: AppColors.opicBackground),
@@ -55,6 +57,7 @@ class _AlarmListScreenState extends State<_AlarmListScreen> {
               );
             }
 
+            // 로그인 한 뒤 접근했을 경우
             return Column(
               children: [
                 _buildHeader(context),
@@ -94,6 +97,7 @@ Widget _buildHeader(BuildContext context) {
       child: Row(
         spacing: 10,
         children: [
+          // 뒤로가기 버튼 -> 알림 화면을 끄나, 혹시 오류가 날 경우 홈 화면으로 이동함
           IconButton(
             icon: Icon(Icons.arrow_back_rounded, color: AppColors.opicBlack),
             onPressed: () {
@@ -160,7 +164,6 @@ Widget _buildAlarmList(
       itemBuilder: (context, index) {
         final alarm = alarmList[index];
 
-        // ✅ FutureBuilder 제거 - 이미 alarms 리스트에 데이터가 있음
         return Container(
           color: AppColors.opicBackground,
           child: AlarmRow(alarmId: alarm.id, loginUserId: loginUserId),
