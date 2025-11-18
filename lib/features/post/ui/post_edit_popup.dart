@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:opicproject/core/app_colors.dart';
@@ -19,7 +20,7 @@ class EditPopup extends StatefulWidget {
 
 class _EditPopupState extends State<EditPopup> {
   final pick = ImagePicker();
-  final HomeRepository repository = HomeRepository.shared;
+  final HomeRepository repository = GetIt.instance<HomeRepository>();
 
   Future<void> openGallery() async {
     final pickImage = await pick.pickImage(source: ImageSource.gallery);
@@ -159,7 +160,7 @@ class _EditPopupState extends State<EditPopup> {
                         ? null
                         : () async {
                             if (viewmodel.selectedImage != null) {
-                              final newImageUrl = await HomeRepository.shared
+                              final newImageUrl = await repository
                                   .uploadImageToSupabase(
                                     viewmodel.selectedImage!,
                                   );

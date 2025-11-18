@@ -2,9 +2,9 @@ import 'package:opicproject/core/manager/supabase_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PostRepository {
-  static final PostRepository shared = PostRepository._internal();
-  PostRepository._internal();
-
+  /*static final PostRepository shared = PostRepository._internal();
+  PostRepository._internal();*/
+  PostRepository() {}
   final SupabaseClient _supabase = SupabaseManager.shared.supabase;
   final supabase = SupabaseManager.shared.supabase;
 

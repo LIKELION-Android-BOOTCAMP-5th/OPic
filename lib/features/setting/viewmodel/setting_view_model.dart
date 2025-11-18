@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/core/models/alarm_setting_model.dart';
 import 'package:opicproject/core/models/user_model.dart';
@@ -7,7 +8,7 @@ import 'package:opicproject/features/setting/data/nickname_check_state.dart';
 import '../data/setting_repository.dart';
 
 class SettingViewModel extends ChangeNotifier {
-  final SettingRepository _repository = SettingRepository();
+  final SettingRepository _repository = GetIt.instance<SettingRepository>();
 
   // 로그인 유저 정보
   UserInfo? _loginUser;

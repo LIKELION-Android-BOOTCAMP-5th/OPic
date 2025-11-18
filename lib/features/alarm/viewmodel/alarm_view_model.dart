@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:opicproject/core/models/alarm_model.dart';
 
 import '../data/alarm_repository.dart';
 
 class AlarmViewModel extends ChangeNotifier {
-  final AlarmRepository _repository = AlarmRepository();
+  final AlarmRepository _repository = GetIt.instance<AlarmRepository>();
 
   AlarmViewModel() {
     _initializeScrollListener();

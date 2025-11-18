@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:opicproject/core/models/post_model.dart';
 import 'package:opicproject/core/models/user_model.dart';
 import 'package:opicproject/features/feed/data/feed_repository.dart';
@@ -11,7 +12,7 @@ import 'package:opicproject/features/feed/manager/pagination_manager.dart';
 import 'package:opicproject/features/feed/manager/scroll_manager.dart';
 
 class FeedViewModel extends ChangeNotifier {
-  final FeedRepository _repository = FeedRepository();
+  final FeedRepository _repository = GetIt.instance<FeedRepository>();
   late final ScrollManager _scrollManager;
   final PaginationManager _paginationManager = PaginationManager();
 

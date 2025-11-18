@@ -1,13 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:opicproject/core/manager/supabase_manager.dart';
 import 'package:opicproject/features/post/data/post_repository.dart';
 import 'package:opicproject/features/post/ui/post_detail_page.dart';
 
 class PostViewModel extends ChangeNotifier {
-  final PostRepository _repository = PostRepository.shared;
+  final PostRepository _repository = GetIt.instance<PostRepository>();
 
   Map<String, dynamic>? post;
   int likeCount = 0;

@@ -1,15 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/core/manager/supabase_manager.dart';
 import 'package:opicproject/features/home/data/home_repository.dart';
 import 'package:opicproject/features/post/data/post_repository.dart';
 
 class HomeViewModel extends ChangeNotifier {
-  final PostRepository repository = PostRepository.shared;
-  final HomeRepository homeRepository = HomeRepository.shared;
-  final HomeRepository topicRepository = HomeRepository.shared;
+  final PostRepository repository = GetIt.instance<PostRepository>();
+  final HomeRepository homeRepository = GetIt.instance<HomeRepository>();
+  //final HomeRepository topicRepository = HomeRepository.shared;
 
   List<Map<String, dynamic>> topics = [];
   Map<String, dynamic>? todayTopic;
@@ -57,7 +58,7 @@ class HomeViewModel extends ChangeNotifier {
 
   //주제 불러오기
   Future<void> fetchTopics() async {
-    todayTopic = await topicRepository.fetchTodayTopic();
+    todayTopic = await homeRepository.fetchTodayTopic();
 
     if (todayTopic != null && todayTopic!['id'] != null) {
       await fetchTopicAndPostsById(todayTopic!['id']);
@@ -159,13 +160,13 @@ class HomeViewModel extends ChangeNotifier {
 
   //좋아요 개수
   Future<void> getLikeCount(int postId) async {
-    likes = await topicRepository.getLikeCounts(postId);
+    likes = await homeRepository.getLikeCounts(postId);
     // notifyListeners() 제거 - PostCard가 setState로 관리
   }
 
   //댓글 개수
   Future<void> getCommentCount(int postId) async {
-    comments = await topicRepository.getCommentCounts(postId);
+    comments = await homeRepository.getCommentCounts(postId);
     // notifyListeners() 제거 - PostCard가 setState로 관리
   }
 
