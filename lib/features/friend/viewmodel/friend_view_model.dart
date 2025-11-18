@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:get_it/get_it.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/core/models/block_model.dart';
 import 'package:opicproject/core/models/friend_model.dart';
@@ -9,7 +10,7 @@ import 'package:opicproject/core/models/user_model.dart';
 import 'package:opicproject/features/friend/data/friend_repository.dart';
 
 class FriendViewModel extends ChangeNotifier {
-  final FriendRepository _repository = FriendRepository();
+  final FriendRepository _repository = GetIt.instance<FriendRepository>();
 
   int currentPage = 1;
   ScrollController scrollController = ScrollController();

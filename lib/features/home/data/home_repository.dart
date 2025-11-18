@@ -4,8 +4,8 @@ import 'package:opicproject/core/manager/supabase_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeRepository {
-  static final HomeRepository shared = HomeRepository._internal();
-  HomeRepository._internal();
+  /*static final HomeRepository shared = HomeRepository._internal();
+  HomeRepository._internal();*/
   final SupabaseClient _supabase = SupabaseManager.shared.supabase;
 
   // 오늘의 주제 가져오기

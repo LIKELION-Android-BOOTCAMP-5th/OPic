@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:opicproject/core/app_colors.dart';
@@ -19,7 +20,7 @@ class addPostPopup extends StatefulWidget {
 
 class _addPostPopup extends State<addPostPopup> {
   File? selectedImage;
-  final HomeRepository repository = HomeRepository.shared;
+  final HomeRepository repository = GetIt.instance<HomeRepository>();
   final pick = ImagePicker();
 
   Future<void> openGallery() async {
@@ -191,8 +192,9 @@ class _addPostPopup extends State<addPostPopup> {
                             }
 
                             final file = selectedImage ?? takePicture!;
-                            final imageUrl = await HomeRepository.shared
-                                .uploadImageToSupabase(file);
+                            final imageUrl =
+                                await GetIt.instance<HomeRepository>()
+                                    .uploadImageToSupabase(file);
 
                             if (imageUrl == null) {
                               showToast("이미지 업로드 실패");
