@@ -18,7 +18,7 @@ class LoginScreen extends StatelessWidget {
             body: Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
-              color: const Color(0xFFFCFCF0),
+              color: AppColors.opicBackground,
               child: Stack(
                 children: [
                   Center(
