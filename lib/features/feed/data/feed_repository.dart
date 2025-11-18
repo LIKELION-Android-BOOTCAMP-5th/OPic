@@ -33,12 +33,14 @@ class FeedRepository {
       isUserBlocked(loginUserId, targetUserId),
       isUserBlockedMe(loginUserId, targetUserId),
       isFriendRequested(loginUserId, targetUserId),
+      isFriendNow(loginUserId, targetUserId),
     ]);
 
     return UserRelationState(
       isBlocked: results[0],
       isBlockedMe: results[1],
       isRequested: results[2],
+      isFriend: results[3],
     );
   }
 
@@ -116,6 +118,19 @@ class FeedRepository {
         .delete()
         .eq('user_id', loginId)
         .eq('blocked_user', targetId);
+  }
+
+  // 친구 관계 확인하기
+  Future<bool> isFriendNow(int loginUserId, int userId) async {
+    final data = await _supabase
+        .from("friends")
+        .select('id')
+        .or(
+          'and(user1_id.eq.$loginUserId,user2_id.eq.$userId),and(user1_id.eq.$userId,user2_id.eq.$loginUserId)',
+        )
+        .maybeSingle();
+
+    return data != null;
   }
 
   // 친구 신청 중인지 확인하기

@@ -48,6 +48,7 @@ class FeedViewModel extends ChangeNotifier {
   bool get isBlocked => _relationState.isBlocked;
   bool get isBlockedMe => _relationState.isBlockedMe;
   bool get isRequested => _relationState.isRequested;
+  bool get isFriend => _relationState.isFriend;
 
   FeedViewModel() {
     _initializeScrollManager();
@@ -89,7 +90,7 @@ class FeedViewModel extends ChangeNotifier {
     _state = FeedState(
       isInitialized: isInitialized ?? _state.isInitialized,
       isLoading: isLoading ?? _state.isLoading,
-      isStatusChecked: isStatusChecked ?? _state.isStatusChecked,
+      isStatusChecked: _state.isStatusChecked,
       shouldShowScrollUpButton:
           shouldShowScrollUpButton ?? _state.shouldShowScrollUpButton,
     );
@@ -100,11 +101,13 @@ class FeedViewModel extends ChangeNotifier {
     bool? isBlocked,
     bool? isBlockedMe,
     bool? isRequested,
+    bool? isFriend,
   }) {
     _relationState = UserRelationState(
       isBlocked: isBlocked ?? _relationState.isBlocked,
       isBlockedMe: isBlockedMe ?? _relationState.isBlockedMe,
       isRequested: isRequested ?? _relationState.isRequested,
+      isFriend: isFriend ?? _relationState.isFriend,
     );
     notifyListeners();
   }
@@ -120,7 +123,7 @@ class FeedViewModel extends ChangeNotifier {
     _resetFeedData(feedUserId, loginUserId);
     _updateState(isLoading: true);
 
-    await _loadInitialData(feedUserId);
+    await _loadInitialData(loginUserId, feedUserId);
 
     _updateState(isInitialized: true, isLoading: false);
   }
@@ -135,11 +138,43 @@ class FeedViewModel extends ChangeNotifier {
     _relationState = const UserRelationState();
   }
 
-  Future<void> _loadInitialData(int feedUserId) async {
+  Future<void> _loadInitialData(int loginUserId, int feedUserId) async {
     await Future.wait([
       _fetchAUser(feedUserId),
       _fetchPosts(page: 1, userId: feedUserId),
+      _fetchUserRelation(loginUserId, feedUserId),
     ]);
+  }
+
+  // 유저 관계 상태 가져오기
+  Future<void> _fetchUserRelation(int loginUserId, int feedUserId) async {
+    _relationState = await _repository.fetchUserRelation(
+      loginUserId,
+      feedUserId,
+    );
+    notifyListeners();
+  }
+
+  // 유저 관계 상태 새로고침
+  Future<void> refreshUserRelation() async {
+    if (_loginUserId == null || _currentFeedUserId == null) return;
+
+    await _fetchUserRelation(_loginUserId!, _currentFeedUserId!);
+  }
+
+  Future<void> refresh(int userId) async {
+    _updateState(isLoading: true);
+
+    await Future.delayed(Duration(milliseconds: 1000));
+
+    _paginationManager.reset();
+
+    await Future.wait([
+      _fetchPosts(page: 1, userId: userId).then((_) {}),
+      if (_loginUserId != null) _fetchUserRelation(_loginUserId!, userId),
+    ]);
+
+    _updateState(isLoading: false);
   }
 
   // 유저와 피드 유저의 관계 확인
@@ -152,21 +187,6 @@ class FeedViewModel extends ChangeNotifier {
     );
 
     _updateState(isStatusChecked: true);
-  }
-
-  // 새로고침
-  Future<void> refresh(int userId) async {
-    _updateState(isLoading: true);
-
-    await Future.delayed(Duration(milliseconds: 1000));
-
-    _paginationManager.reset();
-    _posts = await _repository.fetchPosts(
-      currentPage: currentPage,
-      userId: userId,
-    );
-
-    _updateState(isLoading: false);
   }
 
   // 피드 게시물 가져오기
@@ -203,25 +223,26 @@ class FeedViewModel extends ChangeNotifier {
   // 차단하기
   Future<void> blockUser(int loginUserId, int userId) async {
     await _repository.blockUser(loginUserId, userId);
-    _updateRelationState(isBlocked: true);
+    await refreshUserRelation();
   }
 
   // 차단해제하기
   Future<void> unblockUser(int loginUserId, int userId) async {
     await _repository.unblockUser(loginUserId, userId);
-    _updateRelationState(isBlocked: false);
+    await refreshUserRelation();
   }
 
   // 친구 요청 취소하기
   Future<void> deleteARequest(int loginUserId, int targetUserId) async {
     await _repository.deleteARequest(loginUserId, targetUserId);
-    _updateRelationState(isRequested: false);
+    await refreshUserRelation();
   }
 
   // API 중복 호출 방지
   @override
   void dispose() {
     scrollController.dispose();
+    _scrollManager.dispose();
     super.dispose();
   }
 }

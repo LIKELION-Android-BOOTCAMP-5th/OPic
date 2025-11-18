@@ -23,7 +23,7 @@ class FeedButtons extends StatelessWidget {
     return Consumer2<FeedViewModel, FriendViewModel>(
       builder: (context, feedViewModel, friendViewModel, child) {
         final isBlocked = feedViewModel.relationState.isBlocked;
-        final isFriend = friendViewModel.isFriend;
+        final isFriend = feedViewModel.relationState.isFriend;
         final isRequested = feedViewModel.relationState.isRequested;
 
         return Row(
@@ -145,7 +145,7 @@ class FeedButtons extends StatelessWidget {
         onConfirm: () async {
           context.pop();
           await friendViewModel.makeARequest(loginUserId, feedUser.id);
-          await feedViewModel.checkUserStatus(loginUserId, feedUser.id);
+          await feedViewModel.refreshUserRelation();
           await friendViewModel.checkIfFriend(loginUserId, feedUser.id);
           showToast("친구 요청을 보냈어요 💌");
         },
@@ -186,7 +186,6 @@ class FeedButtons extends StatelessWidget {
         onConfirm: () async {
           context.pop();
           await feedViewModel.unblockUser(loginUserId, feedUser.id);
-          await feedViewModel.checkUserStatus(loginUserId, feedUser.id);
           showToast("사용자를 차단해제했어요");
         },
         onCancel: () => context.pop(),
@@ -205,7 +204,6 @@ class FeedButtons extends StatelessWidget {
         onConfirm: () async {
           context.pop();
           await feedViewModel.blockUser(loginUserId, feedUser.id);
-          await feedViewModel.checkUserStatus(loginUserId, feedUser.id);
           showToast("사용자를 차단했어요");
         },
         onCancel: () => context.pop(),
