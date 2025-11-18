@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/features/home/ui/add_post_popup.dart';
 import 'package:opicproject/features/home/viewmodel/home_viewmodel.dart';
+import 'package:opicproject/features/onboarding/data/onboarding_repository.dart';
+import 'package:opicproject/features/onboarding/viewmodel/onboarding_viewmodel.dart';
 import 'package:opicproject/features/post/ui/post_detail_page.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,8 +22,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    final onboarding = context.read<OnboardingViewModel>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!onboarding.hasSeenOnboarding && context.mounted) {
+        context.push("/");
+      }
       if (widget.topicId != null) {
         context.read<HomeViewModel>().fetchTopicAndPostsById(widget.topicId!);
       } else {
@@ -276,10 +283,4 @@ class _PostCardState extends State<PostCard> {
       ],
     );
   }
-}
-
-void checkOnboarding() async {
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  final String? storedMemo = prefs.getString('temp_memo');
 }
