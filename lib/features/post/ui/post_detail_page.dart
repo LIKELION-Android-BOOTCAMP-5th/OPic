@@ -566,6 +566,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             onPressed: () {
                               final loginUserId =
                                   AuthManager.shared.userInfo?.id ?? 0;
+                              FocusScope.of(context).unfocus();
                               viewmodel.addComment(loginUserId, widget.postId);
                             },
                           ),
