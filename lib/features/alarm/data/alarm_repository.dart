@@ -19,7 +19,7 @@ class AlarmRepository {
     final String range = "$startIndex-$endIndex";
 
     final response = await _dio.get(
-      '/alarm?select=*&user_id=eq.$loginId&is_checked=eq.false',
+      '/alarm?select=*&user_id=eq.$loginId&is_checked=eq.false&order=created_at.desc',
       options: Options(headers: {'Range': range}),
     );
 
@@ -53,5 +53,86 @@ class AlarmRepository {
         .from('alarm')
         .update({'is_checked': true})
         .eq('id', alarmId);
+  }
+
+  // Realtime 구독 시작
+  RealtimeChannel subscribeToAlarms({
+    required int loginUserId,
+    required Function(Alarm) onInsert,
+    required Function(Alarm) onUpdate,
+    required Function(int) onDelete,
+  }) {
+    final channel = _supabase
+        .channel('alarm_changes_$loginUserId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'alarm',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: loginUserId,
+          ),
+          callback: (payload) {
+            try {
+              final newData = payload.newRecord;
+              if (newData.isNotEmpty) {
+                final alarm = Alarm.fromJson(newData);
+                onInsert(alarm);
+              }
+            } catch (e) {
+              print('Error processing insert: $e');
+            }
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'alarm',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: loginUserId,
+          ),
+          callback: (payload) {
+            try {
+              final newData = payload.newRecord;
+              if (newData.isNotEmpty) {
+                final alarm = Alarm.fromJson(newData);
+                onUpdate(alarm);
+              }
+            } catch (e) {
+              print('Error processing update: $e');
+            }
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.delete,
+          schema: 'public',
+          table: 'alarm',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: loginUserId,
+          ),
+          callback: (payload) {
+            try {
+              final oldData = payload.oldRecord;
+              if (oldData.isNotEmpty && oldData['id'] != null) {
+                onDelete(oldData['id'] as int);
+              }
+            } catch (e) {
+              print('Error processing delete: $e');
+            }
+          },
+        )
+        .subscribe();
+
+    return channel;
+  }
+
+  // Realtime 구독 해제
+  Future<void> unsubscribeFromAlarms(RealtimeChannel channel) async {
+    await _supabase.removeChannel(channel);
   }
 }

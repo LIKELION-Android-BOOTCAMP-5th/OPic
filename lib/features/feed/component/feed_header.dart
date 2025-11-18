@@ -21,10 +21,6 @@ class FeedHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMyFeed = feedUser.id == loginUserId;
 
-    if (!isMyFeed) {
-      _checkUserStatus(context);
-    }
-
     return Consumer2<FeedViewModel, FriendViewModel>(
       builder: (context, feedViewModel, friendViewModel, child) {
         final feedCount = feedViewModel.posts.length;
@@ -70,20 +66,6 @@ class FeedHeader extends StatelessWidget {
         );
       },
     );
-  }
-
-  void _checkUserStatus(BuildContext context) {
-    final feedViewModel = context.read<FeedViewModel>();
-    final friendViewModel = context.read<FriendViewModel>();
-
-    if (!feedViewModel.isStatusChecked) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (feedViewModel.isStatusChecked) return;
-
-        feedViewModel.checkUserStatus(loginUserId, feedUser.id);
-        friendViewModel.checkIfFriend(loginUserId, feedUser.id);
-      });
-    }
   }
 
   Widget _buildNicknameSection(BuildContext context, bool isMyFeed) {

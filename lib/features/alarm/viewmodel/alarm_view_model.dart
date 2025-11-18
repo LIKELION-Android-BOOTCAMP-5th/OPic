@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:opicproject/core/models/alarm_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/alarm_repository.dart';
 
@@ -36,6 +37,9 @@ class AlarmViewModel extends ChangeNotifier {
   int _unreadCount = 0;
   int get unreadCount => _unreadCount;
   bool get hasUnreadAlarm => _unreadCount > 0;
+
+  // Realtime 구독
+  RealtimeChannel? _alarmChannel;
 
   // 스크롤 관련
   void _initializeScrollListener() {
@@ -84,7 +88,68 @@ class AlarmViewModel extends ChangeNotifier {
     _unreadCount = _alarms.where((alarm) => !alarm.isChecked).length;
   }
 
-  // 새로고참
+  // Realtime 구독 시작
+  void _startRealtimeSubscription(int loginUserId) {
+    // 기존 구독이 있으면 해제
+    if (_alarmChannel != null) {
+      _repository.unsubscribeFromAlarms(_alarmChannel!);
+    }
+
+    _alarmChannel = _repository.subscribeToAlarms(
+      loginUserId: loginUserId,
+      onInsert: _handleAlarmInsert,
+      onUpdate: _handleAlarmUpdate,
+      onDelete: _handleAlarmDelete,
+    );
+  }
+
+  // 새 알람 추가 처리
+  void _handleAlarmInsert(Alarm newAlarm) {
+    // is_checked가 false인 경우만 리스트에 추가
+    if (!newAlarm.isChecked) {
+      // 중복 체크
+      final exists = _alarms.any((alarm) => alarm.id == newAlarm.id);
+      if (!exists) {
+        // 최신 알람을 맨 위에 추가
+        _alarms.insert(0, newAlarm);
+        _updateUnreadCount();
+        notifyListeners();
+      }
+    }
+  }
+
+  // 알람 업데이트 처리
+  void _handleAlarmUpdate(Alarm updatedAlarm) {
+    final index = _alarms.indexWhere((alarm) => alarm.id == updatedAlarm.id);
+
+    if (updatedAlarm.isChecked) {
+      // 읽음 처리된 경우 리스트에서 제거
+      if (index != -1) {
+        _alarms.removeAt(index);
+        _updateUnreadCount();
+        notifyListeners();
+      }
+    } else {
+      // 아직 안 읽은 경우 업데이트
+      if (index != -1) {
+        _alarms[index] = updatedAlarm;
+        _updateUnreadCount();
+        notifyListeners();
+      }
+    }
+  }
+
+  // 알람 삭제 처리
+  void _handleAlarmDelete(int alarmId) {
+    final index = _alarms.indexWhere((alarm) => alarm.id == alarmId);
+    if (index != -1) {
+      _alarms.removeAt(index);
+      _updateUnreadCount();
+      notifyListeners();
+    }
+  }
+
+  // 새로고침
   Future<void> refresh(int loginUserId) async {
     _isLoading = true;
     notifyListeners();
@@ -113,6 +178,8 @@ class AlarmViewModel extends ChangeNotifier {
       loginId: loginUserId,
     );
     _updateUnreadCount();
+
+    _startRealtimeSubscription(loginUserId);
 
     _isLoading = false;
     notifyListeners();
@@ -161,6 +228,9 @@ class AlarmViewModel extends ChangeNotifier {
   @override
   void dispose() {
     scrollController.dispose();
+    if (_alarmChannel != null) {
+      _repository.unsubscribeFromAlarms(_alarmChannel!);
+    }
     super.dispose();
   }
 }

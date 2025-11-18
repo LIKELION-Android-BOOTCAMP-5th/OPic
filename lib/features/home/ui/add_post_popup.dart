@@ -50,7 +50,7 @@ class _addPostPopup extends State<addPostPopup> {
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Color(0xfffefefe),
+      backgroundColor: AppColors.opicWhite,
       child: Padding(
         padding: EdgeInsets.all(24),
         child: Column(
@@ -71,12 +71,12 @@ class _addPostPopup extends State<addPostPopup> {
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 14,
-                          color: Color(0xff515151),
+                          color: AppColors.opicBlack,
                         ),
                       ),
                       Text(
                         homeViewModel.todayTopic?['content'] ?? "주제 없음",
-                        style: TextStyle(color: Color(0xFF95B7DB)),
+                        style: TextStyle(color: AppColors.opicSoftBlue),
                       ),
                     ],
                   ),
@@ -121,8 +121,8 @@ class _addPostPopup extends State<addPostPopup> {
                   openGallery();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xffe8e8dc),
-                  foregroundColor: Color(0xfffefefe),
+                  backgroundColor: AppColors.opicWarmGrey,
+                  foregroundColor: AppColors.opicWhite,
                   padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -130,14 +130,14 @@ class _addPostPopup extends State<addPostPopup> {
                 ),
                 icon: Icon(
                   Icons.file_upload_outlined,
-                  color: Color(0xff515151),
+                  color: AppColors.opicBlack,
                 ),
                 label: Text(
-                  "이미지 업로드",
+                  "이미지 선택",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xff515151),
+                    color: AppColors.opicBlack,
                   ),
                 ),
               ),
@@ -150,8 +150,8 @@ class _addPostPopup extends State<addPostPopup> {
                   camera();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xff95b7db),
-                  foregroundColor: Color(0xfffefefe),
+                  backgroundColor: AppColors.opicSoftBlue,
+                  foregroundColor: AppColors.opicWhite,
                   padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -163,7 +163,7 @@ class _addPostPopup extends State<addPostPopup> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xfffefefe),
+                    color: AppColors.opicWhite,
                   ),
                 ),
               ),
@@ -205,8 +205,8 @@ class _addPostPopup extends State<addPostPopup> {
                             showToast("게시물이 작성되었습니다.");
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xff95b7db),
-                      foregroundColor: Color(0xfffefefe),
+                      backgroundColor: AppColors.opicSoftBlue,
+                      foregroundColor: AppColors.opicWhite,
                       padding: EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -219,15 +219,15 @@ class _addPostPopup extends State<addPostPopup> {
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               strokeCap: StrokeCap.round,
-                              color: Colors.white,
+                              color: AppColors.opicWhite,
                             ),
                           )
                         : const Text(
-                            "선택",
+                            "업로드",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xfffefefe),
+                              color: AppColors.opicWhite,
                             ),
                           ),
                   ),
@@ -239,8 +239,8 @@ class _addPostPopup extends State<addPostPopup> {
                       context.pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffe8e8dc),
-                      foregroundColor: Color(0xfffefefe),
+                      backgroundColor: AppColors.opicWarmGrey,
+                      foregroundColor: AppColors.opicWhite,
                       padding: EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -251,7 +251,7 @@ class _addPostPopup extends State<addPostPopup> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xff515151),
+                        color: AppColors.opicBlack,
                       ),
                     ),
                   ),

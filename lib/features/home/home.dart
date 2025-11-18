@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/features/home/ui/add_post_popup.dart';
@@ -96,7 +97,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                               if (selectedDate != null) {
                                 await viewmodel.fetchTopicByDate(selectedDate);
-                                showToast('선택한 날짜: ${selectedDate.toLocal()}');
+                                showToast(
+                                  '선택한 날짜: ${DateFormat('yyyy-MM-dd').format(selectedDate)}',
+                                );
                               }
                             },
                             child: Text(

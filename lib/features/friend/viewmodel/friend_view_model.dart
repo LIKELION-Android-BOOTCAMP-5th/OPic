@@ -7,6 +7,7 @@ import 'package:opicproject/core/models/friend_model.dart';
 import 'package:opicproject/core/models/friend_request_model.dart';
 import 'package:opicproject/core/models/user_model.dart';
 import 'package:opicproject/features/friend/data/friend_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FriendViewModel extends ChangeNotifier {
   final FriendRepository _repository = FriendRepository();
@@ -59,6 +60,11 @@ class FriendViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  // Supabase 실시간 구독
+  RealtimeChannel? _friendsChannel;
+  RealtimeChannel? _requestsChannel;
+  RealtimeChannel? _blocksChannel;
+
   FriendViewModel() {
     _initializeScrollListener();
     AuthManager.shared.addListener(_onAuthChanged);
@@ -87,11 +93,117 @@ class FriendViewModel extends ChangeNotifier {
       _loginUserId = null;
       _isInitialized = false;
       _friends = [];
-      _userInfoCache = {}; // 캐시 초기화
+      _userInfoCache = {};
+      _disposeRealtimeChannels();
       notifyListeners();
     } else if (userId != null && _isInitialized) {
       debugPrint("초기화 완료");
     }
+  }
+
+  // 실시간 구독 설정
+  void _setupRealtimeSubscriptions(int loginUserId) {
+    final supabase = Supabase.instance.client;
+
+    // 친구 목록 실시간 업데이트 (필터 없이 콜백에서 처리)
+    _friendsChannel = supabase
+        .channel('friends_$loginUserId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'friends',
+          callback: (payload) {
+            // 내가 포함된 친구 관계만 처리
+            final newRecord = payload.newRecord;
+            final oldRecord = payload.oldRecord;
+
+            bool isRelevant = false;
+            if (newRecord.isNotEmpty) {
+              isRelevant =
+                  newRecord['user1_id'] == loginUserId ||
+                  newRecord['user2_id'] == loginUserId;
+            } else if (oldRecord.isNotEmpty) {
+              isRelevant =
+                  oldRecord['user1_id'] == loginUserId ||
+                  oldRecord['user2_id'] == loginUserId;
+            }
+
+            if (isRelevant) {
+              debugPrint('친구 목록 변경 감지: ${payload.eventType}');
+              _handleFriendsChange(loginUserId);
+            }
+          },
+        )
+        .subscribe();
+
+    // 친구 요청 실시간 업데이트
+    _requestsChannel = supabase
+        .channel('friend_requests_$loginUserId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'friend_request',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'target_id',
+            value: loginUserId,
+          ),
+          callback: (payload) {
+            debugPrint('친구 요청 변경 감지: ${payload.eventType}');
+            _handleFriendRequestsChange(loginUserId);
+          },
+        )
+        .subscribe();
+
+    // 차단 목록 실시간 업데이트
+    _blocksChannel = supabase
+        .channel('blocks_$loginUserId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'block',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: loginUserId,
+          ),
+          callback: (payload) {
+            debugPrint('차단 목록 변경 감지: ${payload.eventType}');
+            _handleBlocksChange(loginUserId);
+          },
+        )
+        .subscribe();
+  }
+
+  // 친구 목록 변경 처리
+  Future<void> _handleFriendsChange(int loginUserId) async {
+    await _fetchFriends(currentPage, loginUserId);
+    await _loadAllUserInfos();
+    notifyListeners();
+  }
+
+  // 친구 요청 변경 처리
+  Future<void> _handleFriendRequestsChange(int loginUserId) async {
+    await _fetchFriendRequests(currentPage, loginUserId);
+    await _loadAllUserInfos();
+    notifyListeners();
+  }
+
+  // 차단 목록 변경 처리
+  Future<void> _handleBlocksChange(int loginUserId) async {
+    await _fetchBlockUsers(currentPage, loginUserId);
+    await _loadAllUserInfos();
+    notifyListeners();
+  }
+
+  // 실시간 구독 해제
+  void _disposeRealtimeChannels() {
+    _friendsChannel?.unsubscribe();
+    _requestsChannel?.unsubscribe();
+    _blocksChannel?.unsubscribe();
+    _friendsChannel = null;
+    _requestsChannel = null;
+    _blocksChannel = null;
   }
 
   //스크롤 관련
@@ -151,6 +263,8 @@ class FriendViewModel extends ChangeNotifier {
     ]);
 
     await _loadAllUserInfos();
+
+    _setupRealtimeSubscriptions(loginUserId);
 
     notifyListeners();
   }
@@ -434,6 +548,7 @@ class FriendViewModel extends ChangeNotifier {
   void dispose() {
     AuthManager.shared.removeListener(_onAuthChanged);
     scrollController.dispose();
+    _disposeRealtimeChannels();
     super.dispose();
   }
 }
