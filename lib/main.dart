@@ -28,9 +28,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await dotenv.load(fileName: "assets/config/.env");
 
   await Supabase.initialize(
-    url: 'https://zoqxnpklgtcqkvskarls.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXhucGtsZ3RjcWt2c2thcmxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTk4NTYsImV4cCI6MjA3ODA3NTg1Nn0.qR8GmGNztCm44qqm7xJK4VvmI1RcIJybGKeMVBy8yaA',
+    url: dotenv.env['Supabase_URL']!,
+    anonKey: dotenv.env['Supabase_Anonkey']!,
   );
 
   //백그라운드에서 실행시 앱실행과는 독립된 공간이므로 직접 레포지토리와 매니저를 등록해야함
@@ -53,11 +52,12 @@ void main() async {
   //firebase초기화
   await Firebase.initializeApp();
 
+  //supabase 초기화
   await Supabase.initialize(
-    url: 'https://zoqxnpklgtcqkvskarls.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXhucGtsZ3RjcWt2c2thcmxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTk4NTYsImV4cCI6MjA3ODA3NTg1Nn0.qR8GmGNztCm44qqm7xJK4VvmI1RcIJybGKeMVBy8yaA',
+    url: dotenv.env['Supabase_URL']!,
+    anonKey: dotenv.env['Supabase_Anonkey']!,
   );
+
   //백그라운드 핸들러
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   //매니저 초기화(토큰/리스너 설정,로컬 푸시 설정)

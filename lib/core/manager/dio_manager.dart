@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DioManager {
@@ -8,22 +9,16 @@ class DioManager {
 
   DioManager._internal();
 
-  static const String _baseUrl =
-      'https://zoqxnpklgtcqkvskarls.supabase.co/rest/v1';
-  static const String _apiKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXhucGtsZ3RjcWt2c2thcmxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTk4NTYsImV4cCI6MjA3ODA3NTg1Nn0.qR8GmGNztCm44qqm7xJK4VvmI1RcIJybGKeMVBy8yaA';
+  static final String _baseUrl = dotenv.env['DioManager_Base_url']!;
+  static final String _apiKey = dotenv.env['DioManager_Apikey']!;
 
   late final _dio = _createDio();
 
   Dio _createDio() {
     final dio = Dio(
       BaseOptions(
-        baseUrl: 'https://zoqxnpklgtcqkvskarls.supabase.co/rest/v1',
-        headers: {
-          'apikey':
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXhucGtsZ3RjcWt2c2thcmxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTk4NTYsImV4cCI6MjA3ODA3NTg1Nn0.qR8GmGNztCm44qqm7xJK4VvmI1RcIJybGKeMVBy8yaA',
-          'Content-Type': 'application/json',
-        },
+        baseUrl: _baseUrl,
+        headers: {'apikey': _apiKey, 'Content-Type': 'application/json'},
       ),
     );
 
