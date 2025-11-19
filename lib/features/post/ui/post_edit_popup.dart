@@ -78,7 +78,7 @@ class _EditPopupState extends State<EditPopup> {
 
             SizedBox(height: 12),
 
-            viewmodel.selectedImage == null
+            homeViewmodel.selectedImage == null
                 ? (viewmodel.post?['image_url'] != null
                       ? Image.network(
                           viewmodel.post?['image_url'],
@@ -88,7 +88,7 @@ class _EditPopupState extends State<EditPopup> {
                         )
                       : SizedBox())
                 : Image.file(
-                    viewmodel.selectedImage!,
+                    homeViewmodel.selectedImage!,
                     width: double.infinity,
                     height: 350,
                     fit: BoxFit.fill,
@@ -156,13 +156,13 @@ class _EditPopupState extends State<EditPopup> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: (viewmodel.selectedImage == null)
+                    onPressed: (homeViewmodel.selectedImage == null)
                         ? null
                         : () async {
-                            if (viewmodel.selectedImage != null) {
+                            if (homeViewmodel.selectedImage != null) {
                               final newImageUrl = await repository
                                   .uploadImageToSupabase(
-                                    viewmodel.selectedImage!,
+                                    homeViewmodel.selectedImage!,
                                   );
 
                               if (newImageUrl != null) {
