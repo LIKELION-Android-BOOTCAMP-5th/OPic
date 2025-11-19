@@ -93,10 +93,16 @@ class _addPostPopup extends State<addPostPopup> {
                     alignment: Alignment.center,
                     child: Stack(
                       children: [
-                        Text(
-                          "오늘 주제에 맞는 사진을 넣어주세요!",
-                          textAlign: TextAlign.center,
+                        Image.network(
+                          'https://images.unsplash.com/photo-1455156218388-5e61b526818b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fCVFQSVCMiVBOCVFQyU5QSVCOHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=500',
+                          width: double.infinity,
+                          height: 350,
+                          fit: BoxFit.fill,
                         ),
+                        // Text(
+                        //   "오늘 주제에 맞는 사진을 넣어주세요!",
+                        //   textAlign: TextAlign.center,
+                        // ),
                       ],
                     ),
                   )
