@@ -136,6 +136,7 @@ class FeedViewModel extends ChangeNotifier {
     _paginationManager.reset();
     _state = const FeedState();
     _relationState = const UserRelationState();
+    _scrollManager.resetLoadingState();
   }
 
   Future<void> _loadInitialData(int loginUserId, int feedUserId) async {
@@ -168,6 +169,7 @@ class FeedViewModel extends ChangeNotifier {
     await Future.delayed(Duration(milliseconds: 1000));
 
     _paginationManager.reset();
+    _scrollManager.resetLoadingState();
 
     await Future.wait([
       _fetchPosts(page: 1, userId: userId).then((_) {}),
@@ -213,6 +215,7 @@ class FeedViewModel extends ChangeNotifier {
     }
 
     _updateState(isLoading: false);
+    _scrollManager.resetLoadingState();
   }
 
   // 게시물 삭제 후 UI 업데이트

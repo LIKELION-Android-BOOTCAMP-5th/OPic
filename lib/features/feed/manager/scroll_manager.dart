@@ -8,6 +8,7 @@ class ScrollManager {
   final ValueChanged<bool> onScrollButtonVisibilityChanged;
 
   Timer? _debounce;
+  bool _isLoadingMore = false;
 
   ScrollManager({
     required this.controller,
@@ -29,8 +30,9 @@ class ScrollManager {
       _updateScrollButtonVisibility,
     );
 
-    if (_isScrollAtBottom()) {
+    if (_isScrollNearBottom() && !_isLoadingMore) {
       debugPrint('Scroll End');
+      _isLoadingMore = true;
       onScrollToBottom();
     }
   }
@@ -41,8 +43,21 @@ class ScrollManager {
     onScrollButtonVisibilityChanged(shouldShow);
   }
 
-  bool _isScrollAtBottom() {
-    return controller.position.pixels >= controller.position.maxScrollExtent;
+  bool _isScrollNearBottom() {
+    if (!controller.hasClients) return false;
+
+    final position = controller.position;
+    final maxScroll = position.maxScrollExtent;
+    final currentScroll = position.pixels;
+
+    const bottomThreshold = 400.0;
+
+    return currentScroll >= (maxScroll - bottomThreshold);
+  }
+
+  // 로딩 완료 시 플래그 리셋
+  void resetLoadingState() {
+    _isLoadingMore = false;
   }
 
   void scrollToTop() {
