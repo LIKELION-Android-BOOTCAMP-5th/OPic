@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:opicproject/core/app_colors.dart';
 import 'package:opicproject/core/manager/autn_manager.dart';
 import 'package:opicproject/core/models/user_model.dart';
@@ -13,35 +14,77 @@ class FeedScreen extends StatelessWidget {
 
   const FeedScreen({super.key, required this.userId});
 
+  // 토스트
+  void _showLastPageToast() {
+    Fluttertoast.showToast(
+      msg: "마지막 페이지입니다",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: AppColors.opicBlue.withOpacity(0.8),
+      textColor: AppColors.opicWhite,
+      fontSize: 14.0,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final feedViewModel = context.watch<FeedViewModel>();
-    final authManager = context.watch<AuthManager>();
+    return Consumer<FeedViewModel>(
+      builder: (context, feedViewModel, child) {
+        final authManager = context.read<AuthManager>();
 
-    // 현재 로그인한 유저의 아이디
-    final loginUserId = authManager.userInfo?.id ?? 0;
+        // 현재 로그인한 유저의 아이디
+        final loginUserId = authManager.userInfo?.id ?? 0;
 
-    if (_needsInitialization(feedViewModel, loginUserId)) {
-      _initializeFeed(context, feedViewModel, loginUserId);
-    }
+        if (_needsInitialization(feedViewModel, loginUserId)) {
+          _initializeFeed(context, feedViewModel, loginUserId);
+        }
 
-    // 피드 주인인 유저 정보
-    final feedUser = feedViewModel.feedUser;
+        if (feedViewModel.isInitialized &&
+            feedViewModel.feedUser?.id == userId) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            feedViewModel.setOnLastPageReachedCallback(_showLastPageToast);
+          });
+        }
 
-    if (feedUser == null || feedViewModel.isLoading) {
-      return _buildLoadingView();
-    }
+        // 피드 주인인 유저 정보
+        final feedUser = feedViewModel.feedUser;
 
-    return Column(
-      children: [
-        FeedHeader(feedUser: feedUser, loginUserId: loginUserId),
-        Expanded(
-          child: Container(
-            color: AppColors.opicBackground,
-            child: _buildPostList(context, feedViewModel, feedUser),
-          ),
-        ),
-      ],
+        if (feedUser == null || feedViewModel.isLoading) {
+          return _buildLoadingView();
+        }
+
+        return Stack(
+          children: [
+            Column(
+              children: [
+                FeedHeader(feedUser: feedUser, loginUserId: loginUserId),
+                Expanded(
+                  child: Container(
+                    color: AppColors.opicBackground,
+                    child: _buildPostList(context, feedViewModel, feedUser),
+                  ),
+                ),
+              ],
+            ),
+            // 맨 위로 버튼
+            if (feedViewModel.shouldShowScrollUpButton)
+              Positioned(
+                right: 16.0,
+                bottom: 80.0,
+                child: FloatingActionButton(
+                  mini: true,
+                  backgroundColor: AppColors.opicSoftBlue,
+                  onPressed: () => feedViewModel.moveScrollUp(),
+                  child: Icon(
+                    Icons.arrow_upward,
+                    color: AppColors.opicWhite,
+                    size: 20.0,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -108,6 +151,13 @@ class FeedScreen extends StatelessWidget {
       posts: feedViewModel.posts,
       scrollController: feedViewModel.scrollController,
       onRefresh: () => feedViewModel.refresh(feedUser.id),
+      isLoading: feedViewModel.isLoading,
+      isLastPage: feedViewModel.isLastPage,
+      onLoadMore: () {
+        if (!feedViewModel.isLoading && !feedViewModel.isLastPage) {
+          feedViewModel.fetchMorePosts(feedUser.id);
+        }
+      },
     );
   }
 }

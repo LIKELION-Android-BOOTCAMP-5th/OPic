@@ -10,6 +10,7 @@ import 'package:opicproject/features/feed/data/feed_state.dart';
 import 'package:opicproject/features/feed/data/user_relation_state.dart';
 import 'package:opicproject/features/feed/manager/pagination_manager.dart';
 import 'package:opicproject/features/feed/manager/scroll_manager.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FeedViewModel extends ChangeNotifier {
   final FeedRepository _repository = GetIt.instance<FeedRepository>();
@@ -38,6 +39,13 @@ class FeedViewModel extends ChangeNotifier {
   // 현재 피드 주인 유저, 로그인 유저 ID
   int? _currentFeedUserId;
   int? _loginUserId;
+
+  // 마지막 페이지 여부
+  bool _isLastPage = false;
+  bool get isLastPage => _isLastPage;
+
+  // Supabase Realtime 구독
+  RealtimeChannel? _postsChannel;
 
   // Getter
   int get currentPage => _paginationManager.currentPage;
@@ -112,6 +120,61 @@ class FeedViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Realtime 구독 설정
+  void _setupRealtimeSubscription(int feedUserId) {
+    final supabase = Supabase.instance.client;
+
+    _postsChannel = supabase
+        .channel('posts_changes_$feedUserId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.delete,
+          schema: 'public',
+          table: 'posts',
+          callback: (payload) {
+            _handlePostChanged(feedUserId);
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'posts',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: feedUserId,
+          ),
+          callback: (payload) {
+            _handlePostChanged(feedUserId);
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'posts',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: feedUserId,
+          ),
+          callback: (payload) {
+            _handlePostChanged(feedUserId);
+          },
+        )
+        .subscribe();
+  }
+
+  // 게시물 삭제 처리
+  Future<void> _handlePostChanged(int feedUserId) async {
+    await refresh(feedUserId);
+    notifyListeners();
+  }
+
+  // Realtime 구독 해제
+  void _disposeRealtimeChannel() {
+    _postsChannel?.unsubscribe();
+    _postsChannel = null;
+  }
+
   // 피드 정보 초기설정 (다른 유저 피드로 이동할 때 이전 유저 정보 남지 않게)
   Future<void> initializeFeed(int feedUserId, int loginUserId) async {
     if (_state.isLoading) return;
@@ -125,6 +188,7 @@ class FeedViewModel extends ChangeNotifier {
 
     await _loadInitialData(loginUserId, feedUserId);
 
+    _setupRealtimeSubscription(feedUserId);
     _updateState(isInitialized: true, isLoading: false);
   }
 
@@ -137,6 +201,8 @@ class FeedViewModel extends ChangeNotifier {
     _state = const FeedState();
     _relationState = const UserRelationState();
     _scrollManager.resetLoadingState();
+    _isLastPage = false;
+    _disposeRealtimeChannel();
   }
 
   Future<void> _loadInitialData(int loginUserId, int feedUserId) async {
@@ -170,6 +236,7 @@ class FeedViewModel extends ChangeNotifier {
 
     _paginationManager.reset();
     _scrollManager.resetLoadingState();
+    _isLastPage = false;
 
     await Future.wait([
       _fetchPosts(page: 1, userId: userId).then((_) {}),
@@ -193,12 +260,21 @@ class FeedViewModel extends ChangeNotifier {
 
   // 피드 게시물 가져오기
   Future<void> _fetchPosts({required int page, required int userId}) async {
-    _posts = await _repository.fetchPosts(currentPage: page, userId: userId);
+    final fetchedPosts = await _repository.fetchPosts(
+      currentPage: page,
+      userId: userId,
+    );
+
+    _posts = fetchedPosts;
+
+    if (fetchedPosts.length < 15) {
+      _isLastPage = true;
+    }
   }
 
   // 피드 게시물 가져오기 (다음 페이지)
   Future<void> fetchMorePosts(int userId) async {
-    if (_state.isLoading) return;
+    if (_state.isLoading || _isLastPage) return;
 
     _updateState(isLoading: true);
 
@@ -210,12 +286,29 @@ class FeedViewModel extends ChangeNotifier {
 
     if (fetchedPosts.isNotEmpty) {
       _posts.addAll(fetchedPosts);
+
+      if (fetchedPosts.length < 15) {
+        _isLastPage = true;
+      }
     } else {
       _paginationManager.pastPage();
+      _isLastPage = true;
+      _onLastPageReached();
     }
 
     _updateState(isLoading: false);
     _scrollManager.resetLoadingState();
+  }
+
+  // 마지막 페이지 도달 콜백 (토스트 표시용)
+  VoidCallback? _onLastPageReachedCallback;
+
+  void setOnLastPageReachedCallback(VoidCallback? callback) {
+    _onLastPageReachedCallback = callback;
+  }
+
+  void _onLastPageReached() {
+    _onLastPageReachedCallback?.call();
   }
 
   // 게시물 삭제 후 UI 업데이트
@@ -262,6 +355,7 @@ class FeedViewModel extends ChangeNotifier {
   void dispose() {
     scrollController.dispose();
     _scrollManager.dispose();
+    _disposeRealtimeChannel();
     super.dispose();
   }
 }
