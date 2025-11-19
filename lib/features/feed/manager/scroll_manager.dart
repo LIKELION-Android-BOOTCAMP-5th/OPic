@@ -50,7 +50,7 @@ class ScrollManager {
     final maxScroll = position.maxScrollExtent;
     final currentScroll = position.pixels;
 
-    const bottomThreshold = 400.0;
+    const bottomThreshold = 200.0;
 
     return currentScroll >= (maxScroll - bottomThreshold);
   }
