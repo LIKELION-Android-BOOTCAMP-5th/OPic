@@ -4,11 +4,10 @@ import 'package:opicproject/features/friend/data/friend_tab.dart';
 import 'package:opicproject/features/friend/ui/component/add_friend_pop_up.dart';
 import 'package:opicproject/features/friend/ui/component/friend_tab_button.dart';
 import 'package:opicproject/features/friend/viewmodel/friend_view_model.dart';
+import 'package:provider/provider.dart';
 
 class FriendScreenHeader extends StatelessWidget {
-  final FriendViewModel viewModel;
-
-  const FriendScreenHeader({super.key, required this.viewModel});
+  const FriendScreenHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +22,54 @@ class FriendScreenHeader extends StatelessWidget {
       width: double.maxFinite,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-        child: Column(children: [_buildTitleRow(context), _buildTabRow()]),
+        child: Column(
+          children: [
+            _buildTitleRow(context),
+            Consumer<FriendViewModel>(
+              builder: (context, viewModel, child) {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: FriendTabButton(
+                        label: FriendTab.friends.label,
+                        count: viewModel.friendsCount,
+                        isSelected:
+                            viewModel.tabNumber == FriendTab.friends.index,
+                        onTap: () =>
+                            viewModel.changeTab(FriendTab.friends.index),
+                        icon: FriendTab.friends.icon,
+                      ),
+                    ),
+                    const SizedBox(width: 6.0),
+                    Expanded(
+                      child: FriendTabButton(
+                        label: FriendTab.requests.label,
+                        count: viewModel.requestsCount,
+                        isSelected:
+                            viewModel.tabNumber == FriendTab.requests.index,
+                        onTap: () =>
+                            viewModel.changeTab(FriendTab.requests.index),
+                        icon: FriendTab.requests.icon,
+                      ),
+                    ),
+                    const SizedBox(width: 6.0),
+                    Expanded(
+                      child: FriendTabButton(
+                        label: FriendTab.blocked.label,
+                        count: viewModel.blocksCount,
+                        isSelected:
+                            viewModel.tabNumber == FriendTab.blocked.index,
+                        onTap: () =>
+                            viewModel.changeTab(FriendTab.blocked.index),
+                        icon: FriendTab.blocked.icon,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -50,42 +96,6 @@ class FriendScreenHeader extends StatelessWidget {
             size: 20.0,
           ),
           onPressed: () => _showAddFriendDialog(context),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTabRow() {
-    return Row(
-      children: [
-        Expanded(
-          child: FriendTabButton(
-            label: FriendTab.friends.label,
-            count: viewModel.friends.length,
-            isSelected: viewModel.tabNumber == FriendTab.friends.index,
-            onTap: () => viewModel.changeTab(FriendTab.friends.index),
-            icon: FriendTab.friends.icon,
-          ),
-        ),
-        const SizedBox(width: 6.0),
-        Expanded(
-          child: FriendTabButton(
-            label: FriendTab.requests.label,
-            count: viewModel.friendRequests.length,
-            isSelected: viewModel.tabNumber == FriendTab.requests.index,
-            onTap: () => viewModel.changeTab(FriendTab.requests.index),
-            icon: FriendTab.requests.icon,
-          ),
-        ),
-        const SizedBox(width: 6.0),
-        Expanded(
-          child: FriendTabButton(
-            label: FriendTab.blocked.label,
-            count: viewModel.blockUsers.length,
-            isSelected: viewModel.tabNumber == FriendTab.blocked.index,
-            onTap: () => viewModel.changeTab(FriendTab.blocked.index),
-            icon: FriendTab.blocked.icon,
-          ),
         ),
       ],
     );

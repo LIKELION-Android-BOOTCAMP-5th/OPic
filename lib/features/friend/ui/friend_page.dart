@@ -19,7 +19,7 @@ class FriendScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Consumer<FriendViewModel>(
-          builder: (context, viewModel, child) {
+          builder: (context, viewModel, _) {
             final authManager = context.watch<AuthManager>();
             final loginUserId = authManager.userInfo?.id ?? 0;
 
@@ -29,7 +29,7 @@ class FriendScreen extends StatelessWidget {
 
             return Column(
               children: [
-                FriendScreenHeader(viewModel: viewModel),
+                const FriendScreenHeader(),
                 Expanded(
                   child: Container(
                     color: AppColors.opicBackground,
@@ -63,7 +63,7 @@ class FriendScreen extends StatelessWidget {
   Widget _buildFriendList(FriendViewModel viewModel, int loginUserId) {
     return RefreshableListView(
       itemCount: viewModel.friends.length,
-      controller: viewModel.scrollController,
+      controller: viewModel.friendsScrollController,
       emptyMessage: '친구 목록이 비어있습니다',
       onRefresh: () => viewModel.refresh(loginUserId),
       itemBuilder: (context, index) {
@@ -88,7 +88,7 @@ class FriendScreen extends StatelessWidget {
   Widget _buildFriendRequestList(FriendViewModel viewModel, int loginUserId) {
     return RefreshableListView(
       itemCount: viewModel.friendRequests.length,
-      controller: viewModel.scrollController,
+      controller: viewModel.requestsScrollController,
       emptyMessage: '새로운 친구 요청이 없습니다',
       onRefresh: () => viewModel.refresh(loginUserId),
       itemBuilder: (context, index) {
@@ -113,7 +113,7 @@ class FriendScreen extends StatelessWidget {
   Widget _buildBlockList(FriendViewModel viewModel, int loginUserId) {
     return RefreshableListView(
       itemCount: viewModel.blockUsers.length,
-      controller: viewModel.scrollController,
+      controller: viewModel.blocksScrollController,
       emptyMessage: '차단한 유저가 없습니다',
       onRefresh: () => viewModel.refresh(loginUserId),
       itemBuilder: (context, index) {

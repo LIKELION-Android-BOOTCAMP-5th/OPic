@@ -36,8 +36,8 @@ class FriendRepository {
     return UserInfo.fromJson(data);
   }
 
-  // 친구 목록 가져오기
-  Future<List<Friend>> fetchFriends({
+  // 친구 목록 가져오기 (페이지)
+  Future<List<Friend>> fetchFriendsWithPager({
     int currentPage = 1,
     int perPage = 5,
     required int loginId,
@@ -63,8 +63,27 @@ class FriendRepository {
     }
   }
 
-  // 친구 요청 목록 가져오기
-  Future<List<FriendRequest>> fetchFriendRequests({
+  // 친구 수 가져오기
+  Future<int> getFriendsCount({required int loginId}) async {
+    final response = await _dio.get(
+      '/friends?select=*,user1:user!friends_user1_id_fkey(exit_at),user2:user!friends_user2_id_fkey(exit_at)&or=(user1_id.eq.$loginId,user2_id.eq.$loginId)&user1.exit_at=is.null&user2.exit_at=is.null',
+      options: Options(),
+    );
+
+    if (response.data != null) {
+      final List data = response.data;
+      final List<Friend> results = data.map((json) {
+        return Friend.fromJson(json);
+      }).toList();
+
+      return results.length;
+    } else {
+      return 0;
+    }
+  }
+
+  // 친구 요청 목록 가져오기 (페이지)
+  Future<List<FriendRequest>> fetchFriendRequestsWithPager({
     int currentPage = 1,
     int perPage = 5,
     required int loginId,
@@ -86,6 +105,25 @@ class FriendRepository {
       return results;
     } else {
       return List.empty();
+    }
+  }
+
+  // 친구 요청 수 가져오기
+  Future<int> getRequestsCount({required int loginId}) async {
+    final response = await _dio.get(
+      '/friend_request?select=*,requester:user!friend_request_request_id_fkey(exit_at)&target_id=eq.$loginId&answered_at=is.null&requester.exit_at=is.null',
+      options: Options(),
+    );
+
+    if (response.data != null) {
+      final List data = response.data;
+      final List<FriendRequest> results = data.map((json) {
+        return FriendRequest.fromJson(json);
+      }).toList();
+
+      return results.length;
+    } else {
+      return 0;
     }
   }
 
@@ -206,5 +244,24 @@ class FriendRepository {
         .delete()
         .eq('user_id', loginId)
         .eq('blocked_user', targetId);
+  }
+
+  // 차단 수 가져오기
+  Future<int> getBlocksCount({required int loginId}) async {
+    final response = await _dio.get(
+      '/block?select=*,blocked:user!block_blocked_user_fkey(exit_at)&user_id=eq.$loginId',
+      options: Options(),
+    );
+
+    if (response.data != null) {
+      final List data = response.data;
+      final List<BlockUser> results = data.map((json) {
+        return BlockUser.fromJson(json);
+      }).toList();
+
+      return results.length;
+    } else {
+      return 0;
+    }
   }
 }
